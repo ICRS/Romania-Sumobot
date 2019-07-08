@@ -10,10 +10,12 @@ int main(int argc, char **argv) {
     
     // Create robot instance
     Interfearence robot;
-    // Create controller manager instance
-    controller_manager::ControllerManager cm(&robot);
 
     ros::NodeHandle nh;
+    ros::AsyncSpinner spinner(1);
+    spinner.start();
+    // Create controller manager instance
+    controller_manager::ControllerManager cm(&robot, nh);
 
     ros::Duration elapsed_time;
     struct timespec last_time, current_time;

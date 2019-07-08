@@ -6,26 +6,26 @@ Interfearence::Interfearence() {
                                                         &pos[0],
                                                         &vel[0],
                                                         &eff[0]);
-    jnt_state_interface.registerHandle(state_handle_l);
+    jnt_state_interface_.registerHandle(state_handle_l);
 
     hardware_interface::JointStateHandle state_handle_r("right_wheel_joint", 
                                                         &pos[1],
                                                         &vel[1],
                                                         &eff[1]);
-    jnt_state_interface.registerHandle(state_handle_r);
+    jnt_state_interface_.registerHandle(state_handle_r);
 
-    registerInterface(&jnt_state_interface);
+    registerInterface(&jnt_state_interface_);
 
     // Connect and register the joint position interface
     hardware_interface::JointHandle vel_handle_l(
-        jnt_state_interface.getHandle("left_wheel_joint"), &cmd[0]);
-    jnt_vel_interface.registerHandle(vel_handle_l);
+        jnt_state_interface_.getHandle("left_wheel_joint"), &cmd[0]);
+    jnt_eff_interface_.registerHandle(vel_handle_l);
 
     hardware_interface::JointHandle vel_handle_r(
-        jnt_state_interface.getHandle("right_wheel_joint"), &cmd[1]);
-    jnt_vel_interface.registerHandle(vel_handle_r);
+        jnt_state_interface_.getHandle("right_wheel_joint"), &cmd[1]);
+    jnt_eff_interface_.registerHandle(vel_handle_r);
 
-    registerInterface(&jnt_vel_interface);
+    registerInterface(&jnt_eff_interface_);
 }
 
 void Interfearence::write() {
