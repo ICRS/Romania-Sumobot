@@ -1,0 +1,32 @@
+<?xml version="1.0" ?>
+<sdf version="1.5">
+  <world name="sumo_ring">
+    <include>
+      <uri>model://sun</uri>
+    </include>
+    <include>
+      <uri>model://ground_plane</uri>
+    </include>
+    <model name="ring">
+      <static>true</static>
+      <link name="base_link">
+        <visual name="visual">
+          <geometry>
+            <cylinder>
+              <length>0.05</length>
+              <radius>0.75</radius>
+            </cylinder>
+          </geometry>
+        </visual>
+        <collision name="collision">
+          <geometry>
+            <cylinder>
+              <length>0.05</length>
+              <radius>0.75</radius>
+            </cylinder>
+          </geometry>
+        </collision>
+      </link>
+    </model>
+  </world>
+</sdf>

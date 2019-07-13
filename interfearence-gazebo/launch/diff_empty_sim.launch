@@ -1,0 +1,21 @@
+<launch>
+    <!-- Set PATH variable so gazebo can find resources in this package -->
+    <env name="GAZEBO_RESOURCE_PATH" value="$(find interfearence-gazebo)"/>
+
+    <!-- Launch Gazebo with custom world file -->
+    <include file="$(find gazebo_ros)/launch/empty_world.launch">
+        <arg name="world_name" value="worlds/sumo_ring.world"/>
+        <arg name="paused" value="false"/>
+        <arg name="use_sim_time" value="true"/>
+        <arg name="gui" value="true"/>
+        <arg name="recording" value="false"/>
+        <arg name="debug" value="false"/>
+    </include>
+
+    <!-- Spawn in our robot -->
+    <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
+          args="-file $(find interfearence-description)/urdf/interfearence.urdf -urdf -x 0 -y 0 -z 0.2 -model interfearence"/>
+
+    <!-- Bring up the "hardware" controllers -->
+    <include file="$(find interfearence-launch)/launch/diff_controller.launch"/>
+</launch>

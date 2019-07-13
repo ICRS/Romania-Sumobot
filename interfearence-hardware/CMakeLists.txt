@@ -4,9 +4,12 @@ project(interfearence-hardware)
 add_compile_options(-std=c++11)
 
 find_package(catkin REQUIRED COMPONENTS
+  rospy
   roscpp
   hardware_interface
   controller_manager
+  geometry_msgs
+  std_msgs
 )
 
 catkin_package(
@@ -28,5 +31,9 @@ target_link_libraries(hardware
 )
 
 install(TARGETS hardware
+  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+install(FILES scripts/velocity_control.py
   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

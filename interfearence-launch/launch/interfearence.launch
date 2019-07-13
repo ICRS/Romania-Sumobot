@@ -1,0 +1,8 @@
+<launch>
+    <!-- The main launch file. Brings up the full (real-life) system -->
+
+    <!-- Bring up the hardware controllers -->
+    <include file="$(find interfearence-launch)/launch/controllers.launch"/>
+    <!-- Bring up the actual hardware interface -->
+    <include file="$(find interfearence-launch)/launch/hardware.launch"/>
+</launch>
