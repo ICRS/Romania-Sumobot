@@ -29,9 +29,31 @@ Interfearence::Interfearence() {
 }
 
 void Interfearence::write() {
-    ROS_ERROR_THROTTLE(30, "Interfearence::write() is not implemented!");
+    ROS_ERROR_THROTTLE(10, "Interfearence::write() is not implemented!");
+    // Write the PWM signal strength to the motors
+    // motor_left.pwm(cmd[0] / max_cmd[0]);
+    // motor_right.pwm(cmd[1] / max_cmd[1]);
+    eff[0] = cmd[0];
+    eff[1] = cmd[1];
 }
 
 void Interfearence::read() {
-    ROS_ERROR_THROTTLE(30, "Interfearence::read() is not implemented!");
+    ROS_ERROR_THROTTLE(10, "Interfearence::read() is not implemented!");
+    // Read pulses since last read
+    unsigned int new_counts[2];
+    // motor_left.read_new_counts(&new_counts[0]);
+    // motor_right.read_new_counts(&new_counts[1]);
+    
+    // Get delta time
+    auto now = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> dt = now - last_time;
+    last_time += dt;
+
+    vel[0] = radians_per_pulse_ * new_counts[0] / dt;
+    vel[1] = radians_per_pulse_ * new_counts[1] / dt;
+
+    pos[0] += radians_per_pulse_ * new_counts[0];
+    pos[1] += radians_per_pulse_ * new_counts[1];
+
+    // Publish odometry
 }

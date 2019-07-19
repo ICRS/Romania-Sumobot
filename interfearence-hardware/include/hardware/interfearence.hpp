@@ -2,6 +2,8 @@
 #include <hardware_interface/joint_state_interface.h>
 #include <hardware_interface/robot_hw.h>
 
+#include <chrono>
+
 class Interfearence : public hardware_interface::RobotHW {
 public:
     Interfearence();
@@ -14,4 +16,6 @@ private:
     double pos[2];
     double vel[2];
     double eff[2];
+
+    std::chrono::high_resolution_clock::time_point last_time;
 };
