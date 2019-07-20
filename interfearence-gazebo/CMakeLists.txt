@@ -3,8 +3,7 @@ project(interfearence-gazebo)
 
 find_package(catkin REQUIRED COMPONENTS
   gazebo_ros
-  ros_control
-  interfearence-launch
+  gazebo_plugins
 )
 
 catkin_package(

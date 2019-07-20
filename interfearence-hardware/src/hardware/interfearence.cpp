@@ -45,12 +45,12 @@ void Interfearence::read() {
     // motor_right.read_new_counts(&new_counts[1]);
     
     // Get delta time
-    auto now = std::chrono::high_resolution_clock::now();
+    auto now = std::chrono::steady_clock::now();
     std::chrono::duration<double> dt = now - last_time;
-    last_time += dt;
+    last_time = now;
 
-    vel[0] = radians_per_pulse_ * new_counts[0] / dt;
-    vel[1] = radians_per_pulse_ * new_counts[1] / dt;
+    vel[0] = radians_per_pulse_ * new_counts[0] / dt.count();
+    vel[1] = radians_per_pulse_ * new_counts[1] / dt.count();
 
     pos[0] += radians_per_pulse_ * new_counts[0];
     pos[1] += radians_per_pulse_ * new_counts[1];

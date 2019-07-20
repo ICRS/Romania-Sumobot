@@ -17,5 +17,7 @@ private:
     double vel[2];
     double eff[2];
 
-    std::chrono::high_resolution_clock::time_point last_time;
+    std::chrono::steady_clock::time_point last_time;
+
+    float radians_per_pulse_;
 };

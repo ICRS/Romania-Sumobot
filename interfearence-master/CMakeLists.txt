@@ -18,16 +18,16 @@ include_directories(
   ${catkin_INCLUDE_DIRS}
 )
 
-add_executable(master 
-  src/master.cpp
-)
+#add_executable(master 
+#  src/master.cpp
+#)
 
-add_dependencies(master ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
+#add_dependencies(master ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
-target_link_libraries(master
-  ${catkin_LIBRARIES}
-)
+#target_link_libraries(master
+#  ${catkin_LIBRARIES}
+#)
 
-install(TARGETS master
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
+#install(TARGETS master
+#  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+#)
