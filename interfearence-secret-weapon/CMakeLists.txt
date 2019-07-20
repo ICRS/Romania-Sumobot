@@ -8,12 +8,15 @@ find_package(catkin REQUIRED COMPONENTS
   roscpp
   tf2
   sensor_msgs
+  nav_msgs
 )
+
+find_package(Eigen3 REQUIRED)
 
 catkin_package()
 
 include_directories(
- include
+  include
   ${catkin_INCLUDE_DIRS}
 )
 
@@ -26,6 +29,7 @@ add_executable(lidar_processor
 add_dependencies(lidar_processor ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(lidar_processor
+  Eigen3::Eigen
   ${catkin_LIBRARIES}
 )
 
