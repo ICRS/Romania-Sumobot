@@ -20,13 +20,14 @@ private:
     ros::Subscriber laser_sub_;
     // Odom of **ENEMY** robot
     ros::Publisher odom_pub_;
-    ros::AsyncSpinner spinner_;
 
     Eigen::Vector3f prev_pos_;
     double prev_time_;
 
     const float arena_diameter_;
     const float arena_sf_;
+
+    bool first_run_;
 };
 
 #endif // __ROBOT_FINDER_HPP__

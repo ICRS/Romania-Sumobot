@@ -5,4 +5,7 @@
     <include file="$(find interfearence-launch)/launch/controllers.launch"/>
     <!-- Bring up the actual hardware interface -->
     <include file="$(find interfearence-launch)/launch/hardware.launch"/>
+    <!-- Bring up the secret weapon -->
+    <include file="$(find interfearence-launch)/launch/secret_weapon.launch"/>
+
 </launch>

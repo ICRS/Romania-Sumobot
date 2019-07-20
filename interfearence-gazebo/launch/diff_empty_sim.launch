@@ -18,4 +18,8 @@
 
     <!-- Bring up the "hardware" controllers -->
     <include file="$(find interfearence-launch)/launch/diff_controller.launch"/>
+
+    <!-- Bring up the secret weapon -->
+    <include file="$(find interfearence-launch)/launch/secret_weapon.launch"/>
+
 </launch>

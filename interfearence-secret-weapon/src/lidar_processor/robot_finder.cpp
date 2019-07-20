@@ -3,12 +3,15 @@
 RobotFinder::RobotFinder(std::string laser_topic, 
                          float arena_diameter,
                          float arena_sf) 
-        :spinner_(1), arena_diameter_(arena_diameter), arena_sf_(arena_sf) {
+        :arena_diameter_(arena_diameter), arena_sf_(arena_sf),
+         prev_pos_(0, 0, 0), first_run_(true) {
+    prev_time_ = ros::Time::now().sec 
+               + ros::Time::now().nsec / 1000000000;
     laser_sub_ = nh_.subscribe(laser_topic, 
                                50, 
                                &RobotFinder::laserscan_cb, 
                                this);
-    odom_pub_ = nh_.advertise<nav_msgs::Odometry>("enemy_odom", 50);
+    odom_pub_ = nh_.advertise<nav_msgs::Odometry>("enemy_vo", 50);
 }
 
 RobotFinder::~RobotFinder() {
@@ -43,12 +46,17 @@ void RobotFinder::laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg) {
     average_pos /= detections.size();
 
     double now = msg->header.stamp.sec 
-               + msg->header.stamp.nsec / 1000000000;
+               + (double)msg->header.stamp.nsec / 1000000000.f;
     // Calculate delta pos to estimate velocity
     Eigen::Vector3f vel = (average_pos - prev_pos_) 
                         / (now - prev_time_);
     prev_pos_ = average_pos;
     prev_time_ = now;
+
+    if(first_run_) {
+        first_run_ = false;
+        return;
+    }
 
     // Finally, publish the estimated position of the enemy robot
     nav_msgs::Odometry odom;

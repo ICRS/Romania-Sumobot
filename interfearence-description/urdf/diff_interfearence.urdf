@@ -47,6 +47,65 @@
     <child link="chassis"/>
   </joint>
 
+  <link name="hokuyo">
+    <visual>
+      <geometry>
+        <box size="0.05 0.05 0.07"/>
+      </geometry>
+    </visual>
+    <inertial>
+      <origin xyz="0 0 0" rpy="0 0 0"/>
+      <mass value="0.0"/>
+      <inertia
+      ixx="0"
+      ixy="0"
+      ixz="0"
+      iyy="0"
+      iyz="0"
+      izz="0"/>
+    </inertial>
+  </link>
+
+  <gazebo reference="hokuyo">
+    <sensor type="gpu_ray" name="hokuyo_sensor">
+      <pose>0 0 0 0 0 0</pose>
+      <visualize>true</visualize>
+      <always_on>1</always_on>
+      <update_rate>30</update_rate>
+      <ray>
+        <scan>
+          <horizontal>
+            <samples>640</samples>
+            <resolution>1</resolution>
+            <min_angle>-2.0944</min_angle>
+            <max_angle>2.0944</max_angle>
+          </horizontal>
+        </scan>
+        <range>
+          <min>0.08</min>
+          <max>10</max>
+          <resolution>0.01</resolution>
+        </range>
+        <noise>
+          <type>gaussian</type>
+          <mean>0.0</mean>
+          <stddev>0.01</stddev>
+        </noise>
+      </ray>
+      <plugin name="laser"
+              filename="libgazebo_ros_gpu_laser.so">
+        <topicName>laser_scan</topicName>
+        <frameName>hokuyo</frameName>
+      </plugin>
+    </sensor>
+  </gazebo>
+
+  <joint name="hokuyo_joint" type="fixed">
+    <parent link="chassis"/>
+    <child link="hokuyo"/>
+    <origin xyz="0 0 0.035"/>
+  </joint>
+
   <link name="left_wheel">
     <visual>
       <geometry>

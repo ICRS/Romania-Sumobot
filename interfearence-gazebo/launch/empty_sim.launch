@@ -10,6 +10,7 @@
         <arg name="gui" value="true"/>
         <arg name="recording" value="false"/>
         <arg name="debug" value="false"/>
+        <arg name="verbose" value="false"/>
     </include>
 
     <!-- Spawn in our robot -->
@@ -18,4 +19,8 @@
 
     <!-- Bring up the "hardware" controllers -->
     <include file="$(find interfearence-launch)/launch/controllers.launch"/>
+
+    <!-- Bring up the secret weapon -->
+    <include file="$(find interfearence-launch)/launch/secret_weapon.launch"/>
+
 </launch>
