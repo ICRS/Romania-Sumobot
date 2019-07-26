@@ -33,6 +33,9 @@ void RobotFinder::laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg) {
         angle += msg->angle_increment;
     }
 
+    // If we didn't see anything, don't publish
+    if(!detections.size()) return;
+
     // Having calculated all points, now remove any that are outside the
     // arena, by getting the transform from the laser scanner to the arena
     // frame

@@ -23,4 +23,7 @@
     <!-- Bring up the secret weapon -->
     <include file="$(find interfearence-launch)/launch/secret_weapon.launch"/>
 
+    <!-- Bring up the master -->
+    <node name="rush_b" pkg="interfearence-master" type="rush_enemy.py"
+          output="screen"/>
 </launch>
