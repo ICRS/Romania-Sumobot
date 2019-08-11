@@ -13,7 +13,7 @@
 
     <!-- Load the controllers -->
     <node name="controller_spawner" pkg="controller_manager" type="spawner" 
-          respawn="false" output="screen" ns="/"
+          respawn="false" output="screen"
           args=" 
             /interfearence/controller/state/joint_state_controller
             /interfearence/controller/velocity/left_velocity_controller 

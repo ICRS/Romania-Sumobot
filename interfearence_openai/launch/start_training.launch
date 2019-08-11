@@ -1,0 +1,6 @@
+<launch>
+    <param name="use_sim_time" value="true"/>
+    <rosparam command="load" file="$(find interfearence_openai)/config/qlearn_params.yaml"/>
+    <node pkg="interfearence_openai" name="interfearence_learning" 
+          type="start_training.py" output="screen"/>
+</launch>

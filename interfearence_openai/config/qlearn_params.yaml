@@ -1,0 +1,14 @@
+interfearence:
+    task_and_robot_environment_name: 'InterfearencePushEnemy-v0'
+    ros_ws_abspath: "/home/nickick/catkin_ws"
+    running_step: 0.04 # amount of time the control will be executed
+    pos_step: 0.016     # increment in position for each command
+    
+    #qlearn parameters
+    alpha: 0.2
+    gamma: 0.8
+    epsilon: 0.9
+    epsilon_discount: 0.999
+    nepisodes: 2000
+    nsteps: 10001
+    running_step: 0.05 # Time for each step

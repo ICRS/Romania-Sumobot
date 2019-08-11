@@ -1,0 +1,14 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>interfearence_openai</name>
+  <version>0.0.0</version>
+  <description>The interfearence_openai package</description>
+
+  <maintainer email="nickick@todo.todo">nickick</maintainer>
+
+  <license>TODO</license>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <depend>rospy</depend>
+  <depend>openai_ros</depend>
+</package>
