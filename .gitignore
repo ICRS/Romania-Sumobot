@@ -4,3 +4,5 @@ srv/_*.py
 
 # Vim
 *.swp
+
+openai_ros/openai_ros/doc/.idea/
