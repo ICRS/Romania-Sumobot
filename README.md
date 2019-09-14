@@ -1,5 +1,5 @@
 # Romania-Sumobot
-Cheryl, Nick and Victor's robot for Sumobot in Romania
+Cheryl, Neil, Nick, Terence and Victor's robot for Sumobot in Romania
 
 ## Robot Name - Interfearence
 
