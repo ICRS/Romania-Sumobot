@@ -89,7 +89,7 @@ def enemy_odom_callback(msg):
     global enemy_updated
     global tf_buffer
     global last_message
-    last_message = time.time()
+    last_message = rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000
 
     # Transform enemy pose into our co-ordinate frame
     #try:
@@ -132,16 +132,16 @@ def main():
     rospy.Subscriber('/odom', Odometry, self_odom_callback)
     rospy.Subscriber('/enemy_vo', Odometry, enemy_odom_callback)
 
-    last_message = time.time()
+    last_message = rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000
     
     while not rospy.is_shutdown():
-        if time.time() - last_message > LASER_SCAN_TIMEOUT:
+        if rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000 - last_message > LASER_SCAN_TIMEOUT:
             cmd_vel = Twist()
             cmd_vel.angular.z = MAX_THETA_DOT
             cmd_vel.linear.x = 0
 
             publisher.publish(cmd_vel)
-        time.sleep(0.02)
+        rospy.sleep(rospy.Duration(0.02))
 
     rospy.spin()
 

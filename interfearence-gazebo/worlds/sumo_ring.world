@@ -7,52 +7,70 @@
     <model name="ring">
       <static>true</static>
       <link name="base_link">
-        <visual name="visual">
+        <visual name="white_circle">
           <geometry>
             <cylinder>
               <length>0.05</length>
-              <radius>0.75</radius>
+              <radius>0.67</radius>
             </cylinder>
           </geometry>
+          <material>
+            <ambient>0 0 0 1</ambient>
+            <diffuse>0 0 0 1</diffuse>
+            <specular>0 0 0 0</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+        </visual>
+        <visual name="black_ring">
+          <geometry>
+            <cylinder>
+              <length>0.0499</length>
+              <radius>0.77</radius>
+            </cylinder>
+          </geometry>
+          <material>
+            <ambient>1 1 1 1</ambient>
+            <diffuse>1 1 1 1</diffuse>
+            <specular>0 0 0 0</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+        </visual>
+        <visual name="starting_line_1">
+          <pose>0.11 0 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.02 0.2 0.0501</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.37 0.21 0.18 1</ambient>
+            <diffuse>0.37 0.21 0.18 1</diffuse>
+            <specular>0 0 0 0</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
+        </visual>
+        <visual name="starting_line_2">
+          <pose>-0.11 0 0 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>0.02 0.2 0.0501</size>
+            </box>
+          </geometry>
+          <material>
+            <ambient>0.37 0.21 0.18 1</ambient>
+            <diffuse>0.37 0.21 0.18 1</diffuse>
+            <specular>0 0 0 0</specular>
+            <emissive>0 0 0 1</emissive>
+          </material>
         </visual>
         <collision name="collision">
           <geometry>
             <cylinder>
               <length>0.05</length>
-              <radius>0.75</radius>
+              <radius>0.77</radius>
             </cylinder>
           </geometry>
         </collision>
-      </link>
-    </model>
-    <model name="box">
-      <pose>0.5 0.3 0.05 0 0 0</pose>
-      <link name="base_link">
-        <visual name="visual">
-          <geometry>
-            <box>
-              <size>0.195 0.195 0.08</size>
-            </box>
-          </geometry>
-        </visual>
-        <collision name="collision">
-          <geometry>
-            <box>
-              <size>0.195 0.195 0.05</size>
-            </box>
-          </geometry>
-        </collision>
-        <inertial>
-          <mass>3</mass>
-          <inertia>
-            <ixx>0.009118125</ixx>
-            <ixy>0</ixy>
-            <ixz>0</ixz>
-            <iyy>0.009118125</iyy>
-            <iyz>0</iyz>
-            <izz>0.01711125</izz>
-          </inertia>
-        </inertial>
       </link>
     </model>
   </world>

@@ -35,7 +35,7 @@ interfearence:
                 linear:
                     x:
                         has_velocity_limits: true
-                        max_velocity: 1.5
+                        max_velocity: 2.5
                         has_acceleration_limits: true
                         max_acceleration: 10
                         has_jerk_limits: false
@@ -49,6 +49,6 @@ interfearence:
                         has_jerk_limits: false
                         #max_jerk_limit: 0
                 enable_odom_tf: true
-                odom_frame_id: /interfearence/odom
+                odom_frame_id: odom
                 publish_cmd: true
 

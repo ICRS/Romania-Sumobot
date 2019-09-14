@@ -1,0 +1,57 @@
+<launch>
+    <!-- Name of the robot -->
+    <arg name="robot_name" default="InterFEARence"/>
+    <!-- Which controller to use. valid options are:
+         - none
+         - rush_b
+        -->
+    <arg name="controller_type" default="none"/>
+    <!-- Should this launch file launch the gazebo sim?
+         IMPORTANT: ONLY ONE SIM CAN RUN AT A TIME AS IT'S NOT NAMESPACED
+         -->
+    <arg name="launch_gazebo" default="false"/>
+    <!-- Starting x, y and yaw positions of the robot relative to the centre
+         of the ring. -->
+    <arg name="start_x" default="0.5"/>
+    <arg name="start_y" default="0"/>
+    <arg name="start_yaw" default="0"/>
+
+    <!-- z position to start the robots at - account for the thickness
+         of the ring and the height of the robot -->
+    <arg name="start_z" default="0.03"/>
+
+    <!-- Spawn this robot in a namespace to prevent overlap between robots 
+         -->
+    <group ns="$(arg robot_name)">
+        <param name="tf_prefix" value="$(arg robot_name)"/>
+
+        <!-- Load the URDF and change the gazebo robot namespace to the 
+             robot namespace -->
+        <param name="robot_description" 
+               command="$(find xacro)/xacro '$(find interfearence-description)/urdf/cad_interfearence.urdf.xacro' robotns:=$(arg robot_name)"/>
+
+        <!-- Launch the ROS controllers used for the robot -->
+        <include file="$(find interfearence-launch)/launch/controllers.launch">
+            <arg name="load_urdf" value="false"/>
+        </include>
+
+        <!-- Laser scanner processing node -->
+        <include file="$(find interfearence-launch)/launch/secret_weapon.launch"/>
+
+        <!-- Spawn the URDF robot -->
+        <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
+              args="-param /$(arg robot_name)/robot_description -urdf -x $(arg start_x) -y $(arg start_y) -z $(arg start_z) -Y $(arg start_yaw) -model $(arg robot_name)"/>
+    </group>
+
+    <group if="$(arg launch_gazebo)">
+        <!-- Launch Gazebo with custom world file -->
+        <include file="$(find gazebo_ros)/launch/empty_world.launch">
+            <arg name="world_name" value="$(find interfearence-gazebo)/worlds/sumo_ring.world"/>
+            <arg name="paused" value="true"/>
+            <arg name="use_sim_time" value="true"/>
+            <arg name="gui" value="true"/>
+            <arg name="recording" value="false"/>
+            <arg name="debug" value="false"/>
+        </include>
+    </group>
+</launch>

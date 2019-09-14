@@ -1,0 +1,30 @@
+Body: base_link
+COM: base_link 0.17847148634492327 2.496590841003441 4.945261432319558
+exporting stl of base_link
+Body: front_left_line_sensor
+COM: front_left_line_sensor 8.972539055944019 -5.966368115441111 0.6319388889994961
+exporting stl of front_left_line_sensor
+Body: front_right_line_sensor
+COM: front_right_line_sensor -8.972538981392358 -5.966367423818859 0.6319380994214698
+exporting stl of front_right_line_sensor
+Body: front_scoop
+COM: front_scoop -4.252545403383606e-06 -7.12506552287124 3.0366747059604977
+exporting stl of front_scoop
+Body: left_wheel
+COM: left_wheel 5.460582081860011 6.2009784873470615 2.389172469161172
+exporting stl of left_wheel
+Body: right_wheel
+COM: right_wheel -5.460581839081236 6.200000318500184 2.3891299961747126
+exporting stl of right_wheel
+Body: hokuyo
+COM: hokuyo -0.008836885065673844 -3.4849996197606745 5.244060823680686
+exporting stl of hokuyo
+Body: rear_right_line_sensor
+COM: rear_right_line_sensor -8.925069479734633 8.981266797902098 0.01158232703607292
+exporting stl of rear_right_line_sensor
+Body: rear_left_line_sensor
+COM: rear_left_line_sensor 8.925069479734635 8.9812667979021 0.01158232703607312
+exporting stl of rear_left_line_sensor
+Joint: EXPORT_hokuyo_joint
+	parent: base_link
+	child: hokuyo

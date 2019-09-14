@@ -1,7 +1,11 @@
 <launch>
+    <arg name="load_urdf" default="true"/>
+
     <!-- Load URDF -->
-    <param name="robot_description" 
-           command="cat $(find interfearence-description)/urdf/diff_interfearence.urdf"/>
+    <group if="$(arg load_urdf)">
+        <param name="robot_description" 
+               command="cat $(find interfearence-description)/urdf/diff_interfearence.urdf"/>
+    </group>
 
     <!-- Load joint controller configurations from YAML -->
     <rosparam file="$(find interfearence-hardware)/config/interfearence_control.yaml" 
@@ -13,10 +17,10 @@
 
     <!-- Load the controllers -->
     <node name="controller_spawner" pkg="controller_manager" type="spawner" 
-          respawn="false" output="screen" ns="/"
+          respawn="false" output="screen"
           args=" 
-            /interfearence/controller/state/joint_state_controller
-            /interfearence/controller/differential/differential_controller
+            interfearence/controller/state/joint_state_controller
+            interfearence/controller/differential/differential_controller
           "/>
 
     <!-- robot state publisher -->
