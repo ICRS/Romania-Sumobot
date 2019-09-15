@@ -86,6 +86,30 @@
   </link>
 
   <gazebo reference="front_left_line_sensor">
+    <sensor name="front_left_line_sensor_sensor" type="camera">
+      <camera name="front_left_camera">
+        <image>
+          <width>1</width>
+          <height>1</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.002</near>
+        </clip>
+      </camera>
+      <plugin name="front_left_edge_detector_plugin" 
+              filename="libarena_edge_detection_plugin.so">
+        <cameraName>front_left_camera</cameraName>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>30</updateRate>
+        <imageTopicName>rgb/image_raw</imageTopicName>
+        <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
+        <frameName>/$(arg robotns)/front_left_line_sensor</frameName>
+        <topicName>/$(arg robotns)/edge_sensors/front_left</topicName>
+        <upperThreshhold>0.5</upperThreshhold>
+        <lowerThreshhold>0.4</lowerThreshhold>
+      </plugin>
+    </sensor>
     <material>Gazebo/Red</material>
   </gazebo>
 
@@ -115,6 +139,30 @@
   </link>
 
   <gazebo reference="front_right_line_sensor">
+    <sensor name="front_right_line_sensor_sensor" type="camera">
+      <camera name="front_right_camera">
+        <image>
+          <width>1</width>
+          <height>1</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.002</near>
+        </clip>
+      </camera>
+      <plugin name="front_right_edge_detector_plugin" 
+              filename="libarena_edge_detection_plugin.so">
+        <cameraName>front_right_camera</cameraName>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>30</updateRate>
+        <imageTopicName>rgb/image_raw</imageTopicName>
+        <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
+        <frameName>/$(arg robotns)/front_right_line_sensor</frameName>
+        <topicName>/$(arg robotns)/edge_sensors/front_right</topicName>
+        <upperThreshhold>0.5</upperThreshhold>
+        <lowerThreshhold>0.4</lowerThreshhold>
+      </plugin>
+    </sensor>
     <material>Gazebo/Red</material>
   </gazebo>
 
@@ -304,7 +352,7 @@
   <joint name="hokuyo_joint" type="fixed">
     <parent link="base_footprint"/>
     <child link="hokuyo"/>
-    <origin rpy="0 0 -1.57" xyz="-8.000e-05 -3.485e-02  2.744e-02"/>
+    <origin rpy="0 -0.02 -1.57" xyz="-8.000e-05 -3.485e-02  2.744e-02"/>
   </joint>
 
   <link name="rear_right_line_sensor">
@@ -326,7 +374,31 @@
     </visual>
   </link>
 
-  <gazebo reference="rear_left_line_sensor">
+  <gazebo reference="rear_right_line_sensor">
+    <sensor name="rear_right_line_sensor_sensor" type="camera">
+      <camera name="rear_right_camera">
+        <image>
+          <width>1</width>
+          <height>1</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.002</near>
+        </clip>
+      </camera>
+      <plugin name="rear_right_edge_detector_plugin" 
+              filename="libarena_edge_detection_plugin.so">
+        <cameraName>rear_right_camera</cameraName>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>30</updateRate>
+        <imageTopicName>rgb/image_raw</imageTopicName>
+        <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
+        <frameName>/$(arg robotns)/rear_right_line_sensor</frameName>
+        <topicName>/$(arg robotns)/edge_sensors/rear_right</topicName>
+        <upperThreshhold>0.5</upperThreshhold>
+        <lowerThreshhold>0.4</lowerThreshhold>
+      </plugin>
+    </sensor>
     <material>Gazebo/Red</material>
   </gazebo>
 
@@ -355,7 +427,31 @@
     </visual>
   </link>
 
-  <gazebo reference="rear_right_line_sensor">
+  <gazebo reference="rear_left_line_sensor">
+    <sensor name="rear_left_line_sensor_sensor" type="camera">
+      <camera name="rear_left_camera">
+        <image>
+          <width>1</width>
+          <height>1</height>
+          <format>R8G8B8</format>
+        </image>
+        <clip>
+          <near>0.002</near>
+        </clip>
+      </camera>
+      <plugin name="rear_left_edge_detector_plugin" 
+              filename="libarena_edge_detection_plugin.so">
+        <cameraName>rear_left_camera</cameraName>
+        <alwaysOn>true</alwaysOn>
+        <updateRate>30</updateRate>
+        <imageTopicName>rgb/image_raw</imageTopicName>
+        <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
+        <frameName>/$(arg robotns)/rear_left_line_sensor</frameName>
+        <topicName>/$(arg robotns)/edge_sensors/rear_left</topicName>
+        <upperThreshhold>0.5</upperThreshhold>
+        <lowerThreshhold>0.4</lowerThreshhold>
+      </plugin>
+    </sensor>
     <material>Gazebo/Red</material>
   </gazebo>
 

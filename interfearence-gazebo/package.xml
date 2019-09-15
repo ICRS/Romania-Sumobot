@@ -12,4 +12,10 @@
   <depend>gazebo_ros</depend>
   <depend>gazebo_plugins</depend>
   <depend>interfearence-launch</depend>
+  <depend>interfearence_msgs</depend>
+  <depend>roscpp</depend>
+
+  <export>
+    <gazebo_ros plugin_path="${prefix}/lib" gazebo_media_path="${prefix}"/>
+  </export>
 </package>
