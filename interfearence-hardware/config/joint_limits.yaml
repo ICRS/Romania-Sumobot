@@ -2,7 +2,7 @@ joint_limits:
     left_wheel_joint:
         has_position_limits: false
         has_velocity_limits: true
-        max_velocity: 9.55
+        max_velocity: 83.776
         has_acceleration_limits: true
         max_acceleration: 1256.6667
         has_jerk_limits: true
@@ -12,7 +12,7 @@ joint_limits:
     right_wheel_joint:
         has_position_limits: false
         has_velocity_limits: true
-        max_velocity: 9.55
+        max_velocity: 83.776
         has_acceleration_limits: true
         max_acceleration: 1256.6667
         has_jerk_limits: true

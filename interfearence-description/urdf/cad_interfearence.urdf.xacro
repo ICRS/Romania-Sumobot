@@ -238,7 +238,7 @@
     <axis xyz="1 0 0"/>
     <origin rpy="0 0 0" xyz="0.0546  0.06201 0.02389"/>
     <limit effort="2.0"
-           velocity="9.55"/>
+           velocity="83.776"/>
   </joint>
   
   <transmission name="left_wheel_transmission">
@@ -282,7 +282,7 @@
     <axis xyz="1 0 0"/>
     <origin rpy="0 0 0" xyz="-0.0546   0.062    0.02389"/>
     <limit effort="2.0"
-           velocity="9.55"/>
+           velocity="83.776"/>
   </joint>
 
   <transmission name="right_wheel_transmission">

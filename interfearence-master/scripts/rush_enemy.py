@@ -9,7 +9,7 @@ from nav_msgs.msg import Odometry
 import tf2_ros
 
 BASE_FRAME = 'base_link'
-MAX_VEL = 1.5
+MAX_VEL = 2.5
 MAX_THETA_DOT = 6.28318530718
 LASER_SCAN_TIMEOUT = 100000
 
@@ -128,9 +128,9 @@ def main():
     rospy.init_node("master")
     tf_buffer = tf2_ros.Buffer()
     tf_listener = tf2_ros.TransformListener(tf_buffer)
-    publisher = rospy.Publisher('/cmd_vel', Twist, queue_size=2)
-    rospy.Subscriber('/odom', Odometry, self_odom_callback)
-    rospy.Subscriber('/enemy_vo', Odometry, enemy_odom_callback)
+    publisher = rospy.Publisher('cmd_vel', Twist, queue_size=2)
+    rospy.Subscriber('odometry/measured', Odometry, self_odom_callback)
+    rospy.Subscriber('enemy_vo', Odometry, enemy_odom_callback)
 
     last_message = rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000
     

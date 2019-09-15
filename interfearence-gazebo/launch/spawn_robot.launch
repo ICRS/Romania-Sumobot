@@ -41,6 +41,12 @@
         <!-- Spawn the URDF robot -->
         <node name="spawn_urdf" pkg="gazebo_ros" type="spawn_model"
               args="-param /$(arg robot_name)/robot_description -urdf -x $(arg start_x) -y $(arg start_y) -z $(arg start_z) -Y $(arg start_yaw) -model $(arg robot_name)"/>
+
+        <!-- Spawn the chosen controller -->
+        <group if="$(eval arg('controller_type') == 'rush_b')">
+            <node name="rush_b" pkg="interfearence-master" 
+                  type="rush_enemy.py"/>
+        </group>
     </group>
 
     <group if="$(arg launch_gazebo)">
