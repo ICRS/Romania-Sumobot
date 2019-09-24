@@ -32,3 +32,11 @@ target_link_libraries(arena_edge_detection_plugin
   ${GAZEBO_LIBRARIES}
   CameraPlugin
 )
+
+add_library(magnet_plugin
+  plugins/magnet_plugin.cpp
+)
+target_link_libraries(magnet_plugin
+  ${catkin_LIBRARIES}
+  ${GAZEBO_LIBRARIES}
+)

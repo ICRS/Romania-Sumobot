@@ -12,6 +12,8 @@
       <!-- the launch file will replace this with something sensible -->
       <robotNamespace>$(arg robotns)</robotNamespace>
     </plugin>
+    <!-- plugin to simulate the electromagnet -->
+    <plugin name="magnet" filename="libmagnet_plugin.so"/>
     <self_collide>false</self_collide>
   </gazebo>
 
