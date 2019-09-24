@@ -44,7 +44,7 @@
 
         <!-- Spawn the chosen controller -->
         <group if="$(eval arg('controller_type') == 'rush_b')">
-            <node name="rush_b" pkg="interfearence-master" 
+            <node name="rush_b" pkg="interfearence_controllers_rush_enemy" 
                   type="rush_enemy.py"/>
         </group>
     </group>

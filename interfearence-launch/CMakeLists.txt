@@ -3,7 +3,6 @@ project(interfearence-launch)
 
 find_package(catkin REQUIRED COMPONENTS
   interfearence-description
-  interfearence-master
   interfearence-secret-weapon
   interfearence-hardware
   interfearence-localisation

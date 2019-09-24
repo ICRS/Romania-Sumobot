@@ -10,7 +10,6 @@
 
   <buildtool_depend>catkin</buildtool_depend>
   <depend>interfearence-description</depend>
-  <depend>interfearence-master</depend>
   <depend>interfearence-secret-weapon</depend>
   <depend>interfearence-hardware</depend>
   <depend>interfearence-localisation</depend>
