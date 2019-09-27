@@ -36,7 +36,7 @@ Gazebo simulation models, plugins and launch files
 
 ## Creating a Controller
 
-### IMPORTANT NOTE - ALSO SUBSCRIBE TO /reset (std_msgs/Bool). If this is set to True then you need to reset the controller to its initial state. This is to allow for easy resetting of simulation etc.
+### IMPORTANT NOTE - Also subscribe to /reset (std_msgs/Bool). If this is set to True then you need to reset the controller to its initial state. This is to allow for easy resetting of simulation etc.
 
 One of the reasons behind using ROS for this robot is to allow simulation and testing of many different algorithms and tactics, ideally without rewriting the entire code base each time. As such, only one node should have to change between different tactical controllers. This is the controller node and the more different controllers we have the better.
 
