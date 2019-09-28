@@ -28,6 +28,8 @@ private:
     const float arena_sf_;
 
     bool first_run_;
+
+    std::string tf_prefix;
 };
 
 #endif // __ROBOT_FINDER_HPP__

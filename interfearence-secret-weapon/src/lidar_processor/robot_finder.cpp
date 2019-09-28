@@ -12,6 +12,8 @@ RobotFinder::RobotFinder(std::string laser_topic,
                                &RobotFinder::laserscan_cb, 
                                this);
     odom_pub_ = nh_.advertise<nav_msgs::Odometry>("enemy_vo", 50);
+
+    nh_.getParam("tf_prefix", tf_prefix);
 }
 
 RobotFinder::~RobotFinder() {
@@ -65,7 +67,10 @@ void RobotFinder::laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg) {
     nav_msgs::Odometry odom;
     odom.header.stamp = msg->header.stamp;
     odom.header.frame_id = msg->header.frame_id;
-    odom.child_frame_id = "enemy";
+    if(tf_prefix != "")
+        odom.child_frame_id = tf_prefix + "/enemy";
+    else
+        odom.child_frame_id = "enemy";
     odom.pose.pose.position.x = average_pos.x();
     odom.pose.pose.position.y = average_pos.y();
     odom.pose.pose.position.z = average_pos.z();

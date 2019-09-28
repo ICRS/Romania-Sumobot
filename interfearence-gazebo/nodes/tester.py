@@ -4,58 +4,87 @@ import time
 import rospy
 from std_msgs.msg import Bool
 from std_srvs.srv import Empty as SrvEmpty
-from gazebo_msgs.srv import GetModelState, GetLinkState, SetLinkState
+from gazebo_msgs.srv import GetModelState, SetModelState, GetLinkState, SetLinkState
+from gazebo_msgs.msg import ModelState
+from controller_manager_msgs.srv import SwitchController
 from geometry_msgs.msg import Twist
 
 if __name__ == '__main__':
-    rospy.init_node("sumobot tester")
+    rospy.init_node("sumobot_tester")
 
     iterations = rospy.get_param("~iterations")
     robot_1 = rospy.get_param("~robot_ns_1")
     robot_2 = rospy.get_param("~robot_ns_2")
 
-    rospy.wait_for_service("gazebo/reset_simulation")
-    rospy.wait_for_service("gazebo/get_model_state")
-    rospy.wait_for_service("gazebo/unpause_physics")
-    rospy.wait_for_service("gazebo/pause_physics")
-    rospy.wait_for_service("gazebo/get_link_state")
-    rospy.wait_for_service("gazebo/set_link_state")
-    gazebo_reset = rospy.ServiceProxy("gazebo/reset_simulation", SrvEmpty)
-    robot_pos = rospy.ServiceProxy("gazebo/get_model_state", GetModelState)
-    gazebo_unpause = rospy.ServiceProxy("gazebo/unpause_physics", SrvEmpty)
-    gazebo_pause = rospy.ServiceProxy("gazebo/pause_physics", SrvEmpty)
-    get_link = rospy.ServiceProxy("gazebo/get_link_state", GetLinkState)
-    set_link = rospy.ServiceProxy("gazebo/set_link_state", SetLinkState)
+    # Wait for Gazebo to be started
+    rospy.sleep(0.01)
 
-    def reset_link_speed(robot, link):
-        link_state = get_link(robot+"::"+link, robot+"::base_link").link_state
-        link_state.twist = Twist() # Reset speed to 0
-        set_link(link_state)
+    rospy.wait_for_service("gazebo/reset_world")
+    rospy.wait_for_service("gazebo/get_model_state")
+    rospy.wait_for_service("gazebo/set_model_state")
+    rospy.wait_for_service(robot_1+"/controller_manager/switch_controller")
+    rospy.wait_for_service(robot_2+"/controller_manager/switch_controller")
+    gazebo_reset = rospy.ServiceProxy("gazebo/reset_world", SrvEmpty)
+    robot_pos = rospy.ServiceProxy("gazebo/get_model_state", GetModelState)
+    set_robot_pos = rospy.ServiceProxy("gazebo/set_model_state", SetModelState)
+    reset_1 = rospy.ServiceProxy(
+        robot_1+"/controller_manager/switch_controller", SwitchController)
+    reset_2 = rospy.ServiceProxy(
+        robot_2+"/controller_manager/switch_controller", SwitchController)
+
+    def reset_controllers():
+        reset_1([], 
+                ["interfearence/controller/state/joint_state_controller",
+                 "interfearence/controller/velocity/left_velocity_controller",
+                 "interfearence/controller/velocity/right_velocity_controller"],
+                1)
+        reset_2([], 
+                ["interfearence/controller/state/joint_state_controller",
+                 "interfearence/controller/velocity/left_velocity_controller",
+                 "interfearence/controller/velocity/right_velocity_controller"],
+                1)
+
+        reset_1(["interfearence/controller/state/joint_state_controller",
+                 "interfearence/controller/velocity/left_velocity_controller",
+                 "interfearence/controller/velocity/right_velocity_controller"],
+                [],
+                1)
+        reset_2(["interfearence/controller/state/joint_state_controller",
+                 "interfearence/controller/velocity/left_velocity_controller",
+                 "interfearence/controller/velocity/right_velocity_controller"],
+                [],
+                1)
+
+    def reset_model(robot, pose):
+        model_state = ModelState()
+        model_state.model_name = robot
+        model_state.pose = pose
+        model_state.twist = Twist()
+        model_state.reference_frame = "world"
+        set_robot_pos(model_state)
 
     def reset_sim():
         # Reset controllers, pause the sim, reset the world, 
         # unpause the sim and then release the controllers
         reset_msg.data = True
         reset_pub.publish(reset_msg)
-        rospy.sleep(rospy.Duration(0.1))
-#        reset_link_speed(robot_1, "left_wheel")
-#        reset_link_speed(robot_1, "right_wheel")
-#        reset_link_speed(robot_2, "left_wheel")
-#        reset_link_speed(robot_2, "right_wheel")
-        gazebo_pause()
         gazebo_reset()
-        #time.sleep(0.1) # Using wall time as ROS time is paused
-        gazebo_unpause()
+        reset_model(robot_1, robot_1_initial_pose)
+        reset_controllers()
+        rospy.sleep(rospy.Duration(0.1))
         reset_msg.data = False
         reset_pub.publish(reset_msg)
 
-    reset_pub = rospy.Publisher("/reset", Bool)
+    reset_pub = rospy.Publisher("/reset", Bool, queue_size=1)
     reset_msg = Bool()
     # Make sure all controllers are in the reset state
     reset_msg.data = True
     reset_pub.publish(reset_msg)
 
     rospy.sleep(rospy.Duration(0.5))
+
+    robot_1_initial_pose = robot_pos(robot_1, "world").pose
+    robot_2_initial_pose = robot_pos(robot_2, "world").pose
 
     sleeper = rospy.Rate(20)
     robot_1_wins = 0

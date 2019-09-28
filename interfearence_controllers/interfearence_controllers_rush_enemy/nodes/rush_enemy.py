@@ -7,178 +7,172 @@ import rospy
 from geometry_msgs.msg import Twist, Pose, Vector3
 from nav_msgs.msg import Odometry
 from std_msgs.msg import Bool
+from interfearence_controllers_generic_controller.generic_controller import GenericController
 import tf2_ros
+import tf2_geometry_msgs
 
-BASE_FRAME = 'base_link'
-MAX_VEL = 2.5
-MAX_THETA_DOT = 2*6.28318530718
-LASER_SCAN_TIMEOUT = 100000
 
-enemy_pose = Pose()
-enemy_updated = False
-our_pose = Pose()
-our_velocity = Twist()
-us_updated = False
-last_message = None
+class RushEnemyController(GenericController):
+    """
+    A controller which aims to rush down the enemy robot as fast as
+    possible by driving straight at them.
+    """
+    def __init__(self):
+        """
+        Standard init function creating necessary variables and subscribers.
+        """
+        # First we have to initialise the super class
+        GenericController.__init__(self)
+        
+        # Now create class variables
+        try:
+            tf_prefix = rospy.get_param("tf_prefix")
+            self.BASE_FRAME = tf_prefix + "/base_link"
+        except KeyError:
+            self.BASE_FRAME = "base_link"
 
-tf_buffer = None
-tf_listener = None
+        self.MAX_VEL = 2.5
+        self.MAX_THETA_DOT = 2*6.28318530718
+        self.LASER_SCAN_TIMEOUT = 100000
 
-publisher = None
+        self.enemy_pose = Pose()
+        self.enemy_updated = False
+        self.our_pose = Pose()
+        self.our_velocity = Twist()
+        self.us_updated = False
 
-# We're in the RESET state by default
-RESET = True
+        # Init tf and subscribers
+        self.tf_buffer = tf2_ros.Buffer()
+        self.tf_listener = tf2_ros.TransformListener(self.tf_buffer)
+        self.publisher = rospy.Publisher('cmd_vel', Twist, queue_size=2)
+        rospy.Subscriber('odometry/measured', Odometry, self.self_odom_callback)
+        rospy.Subscriber('enemy_vo', Odometry, self.enemy_odom_callback)
 
-def mag(vec):
-    return math.sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z)
+        self.last_message = rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000
 
-def dot(a, b):
-    return a.x*b.x + a.y*b.y + a.z*b.z
-
-def publish_cmd_vel():
-    global publisher
-    global enemy_pose
-    global enemy_updated
-    global our_pose
-    global our_velocity
-    global us_updated
-
-    global MAX_VEL
-    global MAX_THETA_DOT
-    global RESET
-
-    if RESET:
-        return
-
-    if us_updated and enemy_updated:
-        # Calculate vector between us and them
-        vec = Vector3()
-        vec.x = enemy_pose.position.x# - our_pose.position.x
-        vec.y = enemy_pose.position.y# - our_pose.position.y
-        vec.z = enemy_pose.position.z# - our_pose.position.z
-
-        # Normalise
-        m = mag(vec)
-        if m != 0:
-            vec.x = vec.x / m
-            vec.y = vec.y / m
-            vec.z = vec.z / m
-
-        # Calculate the angle we need to turn
-        forwards = Vector3()
-        forwards.x = 1
-        # acos ranges from 0 to pi
-        theta = math.acos(dot(forwards, vec))
-
-        # Maximum turning speed when the angle is greater than 20 degrees
-        theta_dot = 0.35 * theta / MAX_THETA_DOT 
-        if theta > 0.35:
-            theta_dot = MAX_THETA_DOT
-
-        # The linear velocity scales proportionally inversely with the
-        # angular velocity
-        linear_vel = MAX_VEL*(1 - theta_dot/MAX_THETA_DOT)
-
-        # Account for negative theta, we want to turn TOWARDS them
-        if vec.y < 0:
-            theta_dot = -theta_dot
-
+    def reset(self):
+        """
+        Reset variables and time-stuff for a new simulation.
+        """
+        # Create a target of 0 as our output
         cmd_vel = Twist()
-        cmd_vel.angular.z = theta_dot
-        cmd_vel.linear.x = linear_vel
+        self.publisher.publish(cmd_vel)
 
-        publisher.publish(cmd_vel)
+        # Reset timer
+        self.last_message = rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000
 
-        us_updated = False
-        enemy_updated = False
-
-def enemy_odom_callback(msg):
-    global enemy_pose
-    global enemy_updated
-    global tf_buffer
-    global last_message
-    last_message = rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000
-
-    # Transform enemy pose into our co-ordinate frame
-    #try:
-    #    trans = tf_buffer.lookup_transform(msg.child_frame_id,
-    #                                       BASE_FRAME,
-    #                                       rospy.Time(0))
-    #except(tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
-    #    rospy.logerr(e)
-    #    return
-
-    enemy_pose = msg.pose.pose
-    #enemy_pose = trans.transform * msg.pose.pose
-    enemy_updated = True
-
-    publish_cmd_vel()
-
-def self_odom_callback(msg):
-    global our_pose
-    global our_twist
-    global us_updated
-
-    our_pose = msg.pose.pose
-    our_twist = msg.twist.twist
-    us_updated = True
-
-    publish_cmd_vel()
+        # Reset tf
+        self.tf_buffer.clear()
 
 
-def reset_callback(msg):
-    global RESET
+    def update(self):
+        """
+        Non-blocking control loop, called at regular intervals.
 
-    RESET = msg.data
-
-def main():
-    global tf_buffer
-    global tf_listener
-    global publisher
-    global last_message
-    global LASER_SCAN_TIMEOUT
-    global MAX_THETA_DOT
-    global RESET
-
-    rospy.init_node("master")
-    tf_buffer = tf2_ros.Buffer()
-    tf_listener = tf2_ros.TransformListener(tf_buffer)
-    publisher = rospy.Publisher('cmd_vel', Twist, queue_size=2)
-    rospy.Subscriber('odometry/measured', Odometry, self_odom_callback)
-    rospy.Subscriber('enemy_vo', Odometry, enemy_odom_callback)
-    rospy.Subscriber('/reset', Bool, reset_callback)
-
-    last_message = rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000
-    
-    while not rospy.is_shutdown():
-        if RESET:
-            # Create a target of 0 as our output
-            cmd_vel = Twist()
-            publisher.publish(cmd_vel)
-
-            # Reset timer
-            last_message = rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000
-
-            # Reset tf
-            tf_buffer = tf2_ros.Buffer()
-            tf_listener = tf2_ros.TransformListener(tf_buffer)
-
-        elif rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000 - last_message > LASER_SCAN_TIMEOUT:
+        Overloading base class
+        """
+        if rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000 - self.last_message > self.LASER_SCAN_TIMEOUT:
             cmd_vel = Twist()
             cmd_vel.angular.z = MAX_THETA_DOT
             cmd_vel.linear.x = 0
 
             publisher.publish(cmd_vel)
-        try:
-            rospy.sleep(rospy.Duration(0.02))
-        except rospy.exceptions.ROSTimeMovedBackwardsException:
-            # Reset timer
-            last_message = rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000
 
-            # Reset tf
-            tf_buffer = tf2_ros.Buffer()
-            tf_listener = tf2_ros.TransformListener(tf_buffer)
+
+    def get_name(self):
+        """
+        Default name of the node, if no name is specified.
+
+        Overloading base class.
+        """
+        return "rush_enemy"
+
+
+    def mag(self, vec):
+        return math.sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z)
+
+
+    def dot(self, a, b):
+        return a.x*b.x + a.y*b.y + a.z*b.z
+
+
+    def publish_cmd_vel(self):
+        if self.RESET:
+            return
+
+        if self.us_updated and self.enemy_updated:
+            # Calculate vector between us and them
+            vec = Vector3()
+            vec.x = self.enemy_pose.position.x# - our_pose.position.x
+            vec.y = self.enemy_pose.position.y# - our_pose.position.y
+            vec.z = self.enemy_pose.position.z# - our_pose.position.z
+
+            # Normalise
+            m = self.mag(vec)
+            if m != 0:
+                vec.x = vec.x / m
+                vec.y = vec.y / m
+                vec.z = vec.z / m
+
+            # Calculate the angle we need to turn
+            forwards = Vector3()
+            forwards.x = 1
+            # acos ranges from 0 to pi
+            theta = math.acos(self.dot(forwards, vec))
+
+            # Maximum turning speed when the angle is greater than 20 degrees
+            theta_dot = 0.35 * theta / self.MAX_THETA_DOT 
+            if theta > 0.35:
+                theta_dot = self.MAX_THETA_DOT
+
+            # The linear velocity scales proportionally inversely with the
+            # angular velocity
+            linear_vel = self.MAX_VEL*(1 - theta_dot/self.MAX_THETA_DOT)
+
+            # Account for negative theta, we want to turn TOWARDS them
+            if vec.y < 0:
+                theta_dot = -theta_dot
+
+            cmd_vel = Twist()
+            cmd_vel.angular.z = theta_dot
+            cmd_vel.linear.x = linear_vel
+
+            self.publisher.publish(cmd_vel)
+
+            self.us_updated = False
+            self.enemy_updated = False
+
+
+    def enemy_odom_callback(self, msg):
+        self.last_message = rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000
+
+        self.enemy_pose = msg.pose.pose
+
+        if msg.header.frame_id != self.BASE_FRAME:
+            # Transform enemy pose into our co-ordinate frame
+            try:
+                trans = self.tf_buffer.lookup_transform(msg.header.frame_id,
+                                                   self.BASE_FRAME,
+                                                   rospy.Time(0))
+                self.enemy_pose = tf2_geometry_msgs.do_transform_pose(
+                    msg.pose, trans).pose
+            except(tf2_ros.LookupException, tf2_ros.ConnectivityException, tf2_ros.ExtrapolationException) as e:
+                rospy.logerr(e)
+                return
+
+        self.enemy_updated = True
+
+        self.publish_cmd_vel()
+
+
+    def self_odom_callback(self, msg):
+        self.our_pose = msg.pose.pose
+        self.our_twist = msg.twist.twist
+        self.us_updated = True
+
+        self.publish_cmd_vel()
 
 
 if __name__ == '__main__':
-    main()
+    controller = RushEnemyController()
+    controller.main()
