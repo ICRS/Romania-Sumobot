@@ -6,11 +6,12 @@ import time
 import rospy
 from geometry_msgs.msg import Twist, Pose, Vector3
 from nav_msgs.msg import Odometry
+from std_msgs.msg import Bool
 import tf2_ros
 
 BASE_FRAME = 'base_link'
 MAX_VEL = 2.5
-MAX_THETA_DOT = 6.28318530718
+MAX_THETA_DOT = 2*6.28318530718
 LASER_SCAN_TIMEOUT = 100000
 
 enemy_pose = Pose()
@@ -24,6 +25,9 @@ tf_buffer = None
 tf_listener = None
 
 publisher = None
+
+# We're in the RESET state by default
+RESET = True
 
 def mag(vec):
     return math.sqrt(vec.x*vec.x + vec.y*vec.y + vec.z*vec.z)
@@ -41,6 +45,10 @@ def publish_cmd_vel():
 
     global MAX_VEL
     global MAX_THETA_DOT
+    global RESET
+
+    if RESET:
+        return
 
     if us_updated and enemy_updated:
         # Calculate vector between us and them
@@ -117,6 +125,12 @@ def self_odom_callback(msg):
 
     publish_cmd_vel()
 
+
+def reset_callback(msg):
+    global RESET
+
+    RESET = msg.data
+
 def main():
     global tf_buffer
     global tf_listener
@@ -124,6 +138,7 @@ def main():
     global last_message
     global LASER_SCAN_TIMEOUT
     global MAX_THETA_DOT
+    global RESET
 
     rospy.init_node("master")
     tf_buffer = tf2_ros.Buffer()
@@ -131,19 +146,39 @@ def main():
     publisher = rospy.Publisher('cmd_vel', Twist, queue_size=2)
     rospy.Subscriber('odometry/measured', Odometry, self_odom_callback)
     rospy.Subscriber('enemy_vo', Odometry, enemy_odom_callback)
+    rospy.Subscriber('/reset', Bool, reset_callback)
 
     last_message = rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000
     
     while not rospy.is_shutdown():
-        if rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000 - last_message > LASER_SCAN_TIMEOUT:
+        if RESET:
+            # Create a target of 0 as our output
+            cmd_vel = Twist()
+            publisher.publish(cmd_vel)
+
+            # Reset timer
+            last_message = rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000
+
+            # Reset tf
+            tf_buffer = tf2_ros.Buffer()
+            tf_listener = tf2_ros.TransformListener(tf_buffer)
+
+        elif rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000 - last_message > LASER_SCAN_TIMEOUT:
             cmd_vel = Twist()
             cmd_vel.angular.z = MAX_THETA_DOT
             cmd_vel.linear.x = 0
 
             publisher.publish(cmd_vel)
-        rospy.sleep(rospy.Duration(0.02))
+        try:
+            rospy.sleep(rospy.Duration(0.02))
+        except rospy.exceptions.ROSTimeMovedBackwardsException:
+            # Reset timer
+            last_message = rospy.Time.now().secs + rospy.Time.now().nsecs / 1000000000
 
-    rospy.spin()
+            # Reset tf
+            tf_buffer = tf2_ros.Buffer()
+            tf_listener = tf2_ros.TransformListener(tf_buffer)
+
 
 if __name__ == '__main__':
     main()

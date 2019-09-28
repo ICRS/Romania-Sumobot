@@ -6,6 +6,9 @@
     <arg name="robot_name_1" default="test_bot_1"/>
     <arg name="robot_name_2" default="test_bot_2"/>
 
+    <!-- How many tests should we run before outputting the results? -->
+    <arg name="iterations" default="1"/>
+
     <!-- Spawn the first robot -->
     <!-- The first robot launches gazebo, the second does not -->
     <include file="$(find interfearence-gazebo)/launch/spawn_robot.launch">
@@ -23,4 +26,12 @@
         <arg name="start_x" value="0.5"/>
         <arg name="start_yaw" value="3.1415926"/>
     </include>
+
+    <!-- Spawn a tester node -->
+    <node pkg="interfearence-gazebo" type="tester.py" name="tester"
+          output="screen">
+        <param name="iterations" value="$(arg iterations)"/>
+        <param name="robot_ns_1" value="$(arg robot_name_1)"/>
+        <param name="robot_ns_2" value="$(arg robot_name_2)"/>
+    </node>
 </launch>

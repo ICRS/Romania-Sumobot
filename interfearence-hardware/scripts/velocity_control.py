@@ -4,7 +4,7 @@ import math
 
 import rospy
 from geometry_msgs.msg import Twist, TransformStamped
-from std_msgs.msg import Float64
+from std_msgs.msg import Float64, Bool
 from control_msgs.msg import JointControllerState
 from nav_msgs.msg import Odometry
 from tf.transformations import quaternion_from_euler as quat_from_eul
@@ -41,10 +41,18 @@ old_x_pos = 0
 old_y_pos = 0
 old_yaw = 0
 
+last_odom_time = None
+
+RESET = True
 
 def cmd_vel_cb(msg):
     global wheel_radius
     global wheel_separation
+
+    global RESET
+    
+    if RESET == True:
+        return
 
     # Ignore any commands other than x-translation and z-rotation
     Vl = (msg.linear.x-msg.angular.z*wheel_separation/2.0) / wheel_radius
@@ -65,6 +73,12 @@ def left_state_cb(msg):
     global yaw
     global wheel_radius
     global wheel_separation
+
+    global RESET
+    
+    if RESET == True:
+        return
+
     # We assume that the wheel has moved by v*dt and that the other has not
     # As such, the robot has moved on an arc centred about the other wheel
     motion = msg.process_value * msg.time_step * wheel_radius
@@ -91,6 +105,12 @@ def right_state_cb(msg):
     global yaw
     global wheel_radius
     global wheel_separation
+
+    global RESET
+    
+    if RESET == True:
+        return
+
     # We assume that the wheel has moved by v*dt and that the other has not
     # As such, the robot has moved on an arc centred about the other wheel
     motion = msg.process_value * msg.time_step * wheel_radius
@@ -111,7 +131,7 @@ def right_state_cb(msg):
     yaw += dyaw
 
 
-def odom_cb(event):
+def odom_cb():
     global publish_tf
     global tf_prefix
     global odom_pub
@@ -121,12 +141,21 @@ def odom_cb(event):
     global old_x_pos
     global old_y_pos
     global old_yaw
-    
-    # First run through last real is non existant
-    if not event.last_real:
-        return
+    global last_odom_time
 
-    dt = (event.current_real - event.last_real)
+    global RESET
+    
+    if RESET == True:
+        return
+    
+    # First run through we have no dt
+    if last_odom_time == None:
+        last_odom_time = rospy.Time.now()
+        return
+    
+    now = rospy.Time.now()
+
+    dt = now - last_odom_time
     dt = dt.to_sec()
 
     if dt < 0.001:
@@ -145,7 +174,7 @@ def odom_cb(event):
     dyaw /= dt
     
     odom = Odometry()
-    odom.header.stamp = event.current_real
+    odom.header.stamp = now
     odom.header.frame_id = tf_prefix + "/odom"
     odom.child_frame_id = tf_prefix + "/base_link"
 
@@ -185,6 +214,29 @@ def odom_cb(event):
 
     br.sendTransform(t)
 
+def reset_cb(msg):
+    global x_pos
+    global y_pos
+    global yaw
+    global old_x_pos
+    global old_y_pos
+    global old_yaw
+    global last_odom_time
+
+    global RESET
+
+    RESET = msg.data
+    
+    if msg.data == True:
+        last_odom_time = None
+        x_pos = 0
+        y_pos = 0
+        yaw = 0
+        old_x_pos = 0
+        old_y_pos = 0
+        old_yaw = 0
+
+
 if __name__ == '__main__':
     global wheel_radius
     global wheel_separation
@@ -201,6 +253,7 @@ if __name__ == '__main__':
     tf_prefix = rospy.get_param("tf_prefix")
 
     rospy.Subscriber("cmd_vel", Twist, cmd_vel_cb)
+    rospy.Subscriber("/reset", Bool, reset_cb)
 
     # Listen to the controller measurements
     rospy.Subscriber(
@@ -209,6 +262,12 @@ if __name__ == '__main__':
         RIGHT_CONTROLLER_STATE_TOPIC, JointControllerState, right_state_cb)
 
     # Odometry regular callback at 50 Hz
-    rospy.Timer(rospy.Duration(1.0/50.0), odom_cb)
-
-    rospy.spin()
+    #rospy.Timer(rospy.Duration(1.0/50.0), odom_cb)
+    rate = rospy.Rate(50)
+    
+    while not rospy.is_shutdown():
+        odom_cb()
+        try:
+            rate.sleep()
+        except rospy.exceptions.ROSTimeMovedBackwardsException:
+            pass
