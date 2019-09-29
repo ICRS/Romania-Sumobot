@@ -18,7 +18,7 @@
 
     <!-- z position to start the robots at - account for the thickness
          of the ring and the height of the robot -->
-    <arg name="start_z" default="0.05"/>
+    <arg name="start_z" default="0.03"/>
 
     <!-- Spawn this robot in a namespace to prevent overlap between robots 
          -->
