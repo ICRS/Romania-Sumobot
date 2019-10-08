@@ -21,7 +21,7 @@ class RandomController(GenericController):
         GenericController.__init__(self)
 
         # create class variables
-        self.__max_vel = 2.5
+        self.__max_vel = 0.25
         # # pose of enemy in our body frame
         # self.p_eb = Pose()
         # # pose of body in starting frame
@@ -56,7 +56,6 @@ class RandomController(GenericController):
     def update(self):
         cmd_vel = Twist()
         if any(self.edges):
-            cmd_vel.linear.x = -self.__max_vel
             cmd_vel.angular.z = random.random() * 1.5 + 2
         else:
             cmd_vel.linear.x = self.__max_vel
