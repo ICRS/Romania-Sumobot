@@ -29,7 +29,7 @@
 
     <!-- Spawn a tester node -->
     <node pkg="interfearence-gazebo" type="tester.py" name="tester"
-          output="screen">
+          output="screen" required="true">
         <param name="iterations" value="$(arg iterations)"/>
         <param name="robot_ns_1" value="$(arg robot_name_1)"/>
         <param name="robot_ns_2" value="$(arg robot_name_2)"/>

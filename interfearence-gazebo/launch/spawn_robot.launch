@@ -4,6 +4,7 @@
     <!-- Which controller to use. valid options are:
          - none
          - rush_b
+         - train_rush
         -->
     <arg name="controller_type" default="none"/>
     <!-- Should this launch file launch the gazebo sim?
@@ -46,6 +47,12 @@
         <group if="$(eval arg('controller_type') == 'rush_b')">
             <node name="rush_b" pkg="interfearence_controllers_rush_enemy" 
                   type="rush_enemy.py"/>
+        </group>
+        <group if="$(eval arg('controller_type') == 'train_rush')">
+            <node name="train_rush" 
+                  pkg="interfearence_controllers_train_rush_controller" 
+                  type="rush_controller.py"
+                  respawn="true"/>
         </group>
     </group>
 
