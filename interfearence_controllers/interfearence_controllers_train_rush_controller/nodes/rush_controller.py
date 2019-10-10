@@ -48,7 +48,7 @@ class RushEnemyController(BasicController):
             actions=dict(type='int', num_values=9),
             max_episode_timesteps=30*50,
             #memory=10000,
-            saver=dict(directory=path, filename=self.tf_prefix),
+            saver=dict(directory=path, filename=self.tf_prefix+'rush'),
             network='auto',
             estimate_terminal=True
         )
