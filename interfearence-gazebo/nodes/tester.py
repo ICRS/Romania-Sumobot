@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
 import time
+import math
+import random
 import rospy
 from std_msgs.msg import Bool, String
 from std_srvs.srv import Empty as SrvEmpty
@@ -15,6 +17,8 @@ if __name__ == '__main__':
     iterations = rospy.get_param("~iterations")
     robot_1 = rospy.get_param("~robot_ns_1")
     robot_2 = rospy.get_param("~robot_ns_2")
+    global randomise_positions
+    randomise_positions = rospy.get_param("~randomise")
 
     # Wait for Gazebo to be started
     rospy.sleep(0.01)
@@ -58,9 +62,20 @@ if __name__ == '__main__':
                 1)
 
     def reset_model(robot, pose):
+        global randomise_positions
         model_state = ModelState()
         model_state.model_name = robot
         model_state.pose = pose
+        if randomise_positions:
+            pose.position.y += random.random() * 0.5 - 0.25
+            if pose.position.x > 0:
+                pose.position.x -= random.random() * 0.3 - 0.06
+            else:
+                pose.position.x += random.random() * 0.3 - 0.06
+            yaw = 2 * math.acos(pose.orientation.w)
+            yaw += random.random() * 1.6 - 0.8
+            pose.orientation.z = math.sin(yaw/2)
+            pose.orientation.w = math.cos(yaw/2)
         model_state.twist = Twist()
         model_state.reference_frame = "world"
         set_robot_pos(model_state)

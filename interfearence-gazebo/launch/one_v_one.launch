@@ -9,6 +9,10 @@
     <!-- How many tests should we run before outputting the results? -->
     <arg name="iterations" default="1"/>
 
+    <!-- After each match should we randomise the starting x and y positions
+         of the of the robots? -->
+    <arg name="randomise_positions" default="true"/>
+
     <!-- Spawn the first robot -->
     <!-- The first robot launches gazebo, the second does not -->
     <include file="$(find interfearence-gazebo)/launch/spawn_robot.launch">
@@ -33,5 +37,6 @@
         <param name="iterations" value="$(arg iterations)"/>
         <param name="robot_ns_1" value="$(arg robot_name_1)"/>
         <param name="robot_ns_2" value="$(arg robot_name_2)"/>
+        <param name="randomise" value="$(arg randomise_positions)"/>
     </node>
 </launch>
