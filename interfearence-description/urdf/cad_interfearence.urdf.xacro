@@ -108,8 +108,8 @@
         <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
         <frameName>/$(arg robotns)/front_left_line_sensor</frameName>
         <topicName>/$(arg robotns)/edge_sensors/front_left</topicName>
-        <upperThreshhold>0.5</upperThreshhold>
-        <lowerThreshhold>0.4</lowerThreshhold>
+        <upperThreshhold>0.52</upperThreshhold>
+        <lowerThreshhold>0.42</lowerThreshhold>
       </plugin>
     </sensor>
     <material>Gazebo/Red</material>
@@ -118,7 +118,7 @@
   <joint name="front_left_line_sensor_joint" type="fixed">
     <parent link="base_footprint"/>
     <child link="front_left_line_sensor"/>
-    <origin rpy="0 0 0" xyz="0.08972 -0.05966  0.00631"/>
+    <origin rpy="0 0 0" xyz="0.08972 -0.05966  0.000631"/>
   </joint>
 
   <link name="front_right_line_sensor">
@@ -161,8 +161,8 @@
         <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
         <frameName>/$(arg robotns)/front_right_line_sensor</frameName>
         <topicName>/$(arg robotns)/edge_sensors/front_right</topicName>
-        <upperThreshhold>0.5</upperThreshhold>
-        <lowerThreshhold>0.4</lowerThreshhold>
+        <upperThreshhold>0.52</upperThreshhold>
+        <lowerThreshhold>0.42</lowerThreshhold>
       </plugin>
     </sensor>
     <material>Gazebo/Red</material>
@@ -171,7 +171,7 @@
   <joint name="front_right_line_sensor_joint" type="fixed">
     <parent link="base_footprint"/>
     <child link="front_right_line_sensor"/>
-    <origin rpy="0 0 0" xyz="-0.08972 -0.05966  0.00631"/>
+    <origin rpy="0 0 0" xyz="-0.08972 -0.05966  0.000631"/>
   </joint>
 
   <link name="front_scoop">
@@ -197,7 +197,7 @@
     <mu1>0.2</mu1>
     <mu2>0.2</mu2>
     <maxVel>0.0</maxVel>
-    <minDepth>0.001</minDepth>
+    <minDepth>0.0005</minDepth>
     <material>Gazebo/Gold</material>
   </gazebo>
 
