@@ -1,8 +1,11 @@
 #!/usr/bin/env python
 
 import time
+import math
+import random
+import copy
 import rospy
-from std_msgs.msg import Bool
+from std_msgs.msg import Bool, String
 from std_srvs.srv import Empty as SrvEmpty
 from gazebo_msgs.srv import GetModelState, SetModelState, GetLinkState, SetLinkState
 from gazebo_msgs.msg import ModelState
@@ -15,6 +18,7 @@ if __name__ == '__main__':
     iterations = rospy.get_param("~iterations")
     robot_1 = rospy.get_param("~robot_ns_1")
     robot_2 = rospy.get_param("~robot_ns_2")
+    randomise_positions = rospy.get_param("~randomise")
 
     # Wait for Gazebo to be started
     rospy.sleep(0.01)
@@ -31,6 +35,8 @@ if __name__ == '__main__':
         robot_1+"/controller_manager/switch_controller", SwitchController)
     reset_2 = rospy.ServiceProxy(
         robot_2+"/controller_manager/switch_controller", SwitchController)
+
+    winner_pub = rospy.Publisher("/winner", String, queue_size=2)
 
     def reset_controllers():
         reset_1([], 
@@ -58,22 +64,39 @@ if __name__ == '__main__':
     def reset_model(robot, pose):
         model_state = ModelState()
         model_state.model_name = robot
-        model_state.pose = pose
+        model_state.pose = copy.deepcopy(pose)
+        if randomise_positions:
+            model_state.pose.position.y += random.random() * 0.5 - 0.25
+            if model_state.pose.position.x > 0:
+                model_state.pose.position.x -= random.random() * 0.4 - 0.06
+            else:
+                model_state.pose.position.x += random.random() * 0.4 - 0.06
+            yaw = 2 * math.acos(model_state.pose.orientation.w)
+            yaw += random.random() * 1.6 - 0.8
+            model_state.pose.orientation.z = math.sin(yaw/2)
+            model_state.pose.orientation.w = math.cos(yaw/2)
         model_state.twist = Twist()
         model_state.reference_frame = "world"
         set_robot_pos(model_state)
 
+    global start_time
+    start_time = rospy.Time.now()
+
     def reset_sim():
+        global start_time
         # Reset controllers, pause the sim, reset the world, 
         # unpause the sim and then release the controllers
+        winner_pub.publish(win_msg)
         reset_msg.data = True
         reset_pub.publish(reset_msg)
         gazebo_reset()
         reset_model(robot_1, robot_1_initial_pose)
+        reset_model(robot_2, robot_2_initial_pose)
         reset_controllers()
         rospy.sleep(rospy.Duration(0.1))
         reset_msg.data = False
         reset_pub.publish(reset_msg)
+        start_time = rospy.Time.now()
 
     reset_pub = rospy.Publisher("/reset", Bool, queue_size=1)
     reset_msg = Bool()
@@ -91,6 +114,7 @@ if __name__ == '__main__':
     robot_2_wins = 0
     draws = 0
     it = 0
+    win_msg = String()
 
     # The initial paused state can be set off by the user and then we take
     # control
@@ -105,20 +129,32 @@ if __name__ == '__main__':
             if robot_1_pose.pose.position.z <= 0:
                 if robot_1_pose.pose.position.z < robot_2_pose.pose.position.z:
                     robot_2_wins += 1
+                    win_msg.data = robot_2
                     rospy.loginfo("{0} wins".format(robot_2))
                 elif robot_1_pose.pose.position.z > robot_2_pose.pose.position.z:
                     robot_1_wins += 1
+                    win_msg.data = robot_1
                     rospy.loginfo("{0} wins".format(robot_1))
                 else:
                     draws += 1
+                    win_msg.data = 'draw'
                     rospy.loginfo("draw")
                 it += 1
                 reset_sim()
                 
             elif robot_2_pose.pose.position.z <= 0:
                 robot_1_wins += 1
+                win_msg.data = robot_1
                 it += 1
                 rospy.loginfo("{0} wins".format(robot_1))
+                reset_sim()
+            
+            # 20s timeout
+            elif (rospy.Time.now() - start_time).secs >= 20:
+                draws += 1
+                win_msg.data = 'draw'
+                rospy.loginfo('draw')
+                it += 1
                 reset_sim()
 
             sleeper.sleep()

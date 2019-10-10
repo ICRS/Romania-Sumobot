@@ -5,6 +5,7 @@
          - none
          - rush_b
          - random
+         - train_rush
         -->
     <arg name="controller_type" default="none"/>
     <!-- Should this launch file launch the gazebo sim?
@@ -51,6 +52,11 @@
         <group if="$(eval arg('controller_type') == 'random')">
             <node name="random" pkg="interfearence_controllers_random"
                   type="random_controller.py"/>
+        <group if="$(eval arg('controller_type') == 'train_rush')">
+            <node name="train_rush" 
+                  pkg="interfearence_controllers_train_rush_controller" 
+                  type="rush_controller.py"
+                  respawn="true"/>
         </group>
     </group>
 

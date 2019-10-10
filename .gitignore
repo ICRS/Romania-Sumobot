@@ -4,3 +4,6 @@ srv/_*.py
 
 # Vim
 *.swp
+
+# learning results
+interfearence_controllers/interfearence_controllers_train_rush_controller/results/*
