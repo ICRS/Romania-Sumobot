@@ -21,11 +21,17 @@ class RandomController(GenericController):
         GenericController.__init__(self)
 
         # create class variables
-        self.__max_vel = 0.25
+        self.__max_vel = 2.5
+        self.a = 1.3963
+        self.b = 2.0944
+        self.vel = 0
+        self.theta = 0
         # # pose of enemy in our body frame
         # self.p_eb = Pose()
         # # pose of body in starting frame
         # self.p_bs = Pose()
+        # switch state: FORWARDS, BACKWARDS,TURNING_LEFT, TURNING_RIGHT
+        self.state = ""
 
         # if at edge
         self.edges = [False,False,False,False]
@@ -53,12 +59,44 @@ class RandomController(GenericController):
         cmd_vel = Twist()
         self.publisher.publish(cmd_vel)
 
+    def forward(self):
+    		if self.vel < self.__max_vel:
+    				self.vel += 0.1
+    		else:
+    				self.vel = self.__max_vel
+    		rospy.loginfo("self.vel: {}".format(self.vel))
+    		return self.vel
+
+    def backward(self):
+    		if self.vel > -self.__max_vel:
+    				self.vel -= 0.1
+    		else:
+    				self.vel = -self.__max_vel
+    		rospy.loginfo("self.vel: {}".format(self.vel))
+    		return self.vel
+
+    def turn(self,left):
+    		
+
+
+
     def update(self):
         cmd_vel = Twist()
-        if any(self.edges):
-            cmd_vel.angular.z = random.random() * 1.5 + 2
+        self.theta = self.a * random.random() + self.b
+        if self.edges[0] and self.edges[1]:
+        		# cmd_vel.linear.x = - self.__max_vel
+        		cmd_vel.linear.x = self.backward()
+        elif self.edges[0] and not self.edges[1]:
+        		cmd_vel.angular.z = random.random() * self.a + self.b
+        elif self.edges[1] and not self.edges[0]:
+        		cmd_vel.angular.z = -random.random() * self.a - self.b
+        elif self.edges[2] or self.edges[3]:
+            cmd_vel.linear.x = self.forward()
+            # cmd_vel.linear.x = self.__max_vel
         else:
-            cmd_vel.linear.x = self.__max_vel
+        		rospy.loginfo("going forward...")
+        		cmd_vel.linear.x = self.forward()
+        		# cmd_vel.linear.x = self.__max_vel
         self.publisher.publish(cmd_vel)
 
 
