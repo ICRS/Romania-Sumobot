@@ -10,7 +10,9 @@ class RobotFinder {
 public:
     RobotFinder(std::string laser_topic,
                 float arena_diameter,
-                float arena_safety_factor);
+                const float max_robot_side,
+                const float min_robot_side,
+                const float object_distance_threshold);
     ~RobotFinder();
 
 private:
@@ -21,15 +23,16 @@ private:
     // Odom of **ENEMY** robot
     ros::Publisher odom_pub_;
 
-    Eigen::Vector3f prev_pos_;
-    double prev_time_;
-
     const float arena_diameter_;
-    const float arena_sf_;
+    const float max_robot_side_;
+    const float min_robot_side_;
+    const float object_distance_threshold_;
 
     bool first_run_;
 
     std::string tf_prefix;
+
+    std::vector<nav_msgs::Odometry> previous_odoms_;
 };
 
 #endif // __ROBOT_FINDER_HPP__
