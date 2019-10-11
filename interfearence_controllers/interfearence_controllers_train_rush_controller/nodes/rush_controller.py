@@ -40,7 +40,7 @@ class RushEnemyController(BasicController):
 
         rospack = rospkg.RosPack()
         path = rospack.get_path(
-            'interfearence_controllers_train_rush_controller') + '/results'
+            'interfearence_controllers_train_rush_controller') + '/results/'
 
         self.agent = Agent.create(
             agent='ppo',
@@ -48,7 +48,7 @@ class RushEnemyController(BasicController):
             actions=dict(type='int', num_values=9),
             max_episode_timesteps=30*50,
             #memory=10000,
-            saver=dict(directory=path, filename=self.tf_prefix+'rush'),
+            saver=dict(directory=path + self.tf_prefix, filename='rush'),
             network='auto',
             estimate_terminal=True
         )
@@ -127,13 +127,13 @@ class RushEnemyController(BasicController):
         elif action == 3:
             self.cmd_vel.linear.x -= 0.5
         elif action == 4:
-            self.cmd_vel.angular.z += 0.1
-        elif action == 5:
             self.cmd_vel.angular.z += 0.5
+        elif action == 5:
+            self.cmd_vel.angular.z += 2.5
         elif action == 6:
-            self.cmd_vel.angular.z -= 0.1
-        elif action == 7:
             self.cmd_vel.angular.z -= 0.5
+        elif action == 7:
+            self.cmd_vel.angular.z -= 2.5
         elif action == 8:
             # Do nothing action
             pass
@@ -201,8 +201,9 @@ class RushEnemyController(BasicController):
 
 if __name__ == '__main__':
     controller = RushEnemyController()
-    try:
-        controller.main()
-    except:
-        pass
+    while not rospy.is_shutdown():
+        try:
+            controller.main()
+        except Exception as e:
+            pass
     controller.save_learning()

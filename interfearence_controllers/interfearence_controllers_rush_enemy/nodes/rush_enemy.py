@@ -32,7 +32,7 @@ class RushEnemyController(GenericController):
             self.BASE_FRAME = "base_link"
 
         self.MAX_VEL = 2.5
-        self.MAX_THETA_DOT = 2*6.28318530718
+        self.MAX_THETA_DOT = 3*6.28318530718
         self.LASER_SCAN_TIMEOUT = 100000
 
         self.enemy_pose = Pose()
