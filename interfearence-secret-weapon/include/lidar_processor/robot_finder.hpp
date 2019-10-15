@@ -6,6 +6,8 @@
 #include <nav_msgs/Odometry.h>
 #include <Eigen/Geometry>
 
+#include "dbscan/dbscan.hpp"
+
 class RobotFinder {
 public:
     RobotFinder(std::string laser_topic,

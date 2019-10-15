@@ -24,6 +24,7 @@ include_directories(
 add_executable(lidar_processor 
     src/lidar_processor.cpp
     src/lidar_processor/robot_finder.cpp
+    src/dbscan/dbscan.cpp
 )
 
 add_dependencies(lidar_processor ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
