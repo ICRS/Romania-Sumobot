@@ -11,10 +11,12 @@
 class RobotFinder {
 public:
     RobotFinder(std::string laser_topic,
-                float arena_diameter,
+                const float arena_diameter,
                 const float max_robot_side,
                 const float min_robot_side,
-                const float object_distance_threshold);
+                const float object_distance_threshold,
+                const float velocity_threshold,
+                const int odometry_memory);
     ~RobotFinder();
 
 private:
@@ -29,6 +31,8 @@ private:
     const float max_robot_side_;
     const float min_robot_side_;
     const float object_distance_threshold_;
+    const float velocity_threshold_;
+    const int odometry_memory_;
 
     bool first_run_;
 

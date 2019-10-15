@@ -1,17 +1,18 @@
 #include "lidar_processor/robot_finder.hpp"
 
-// 10cm a second is pretty slow...
-const float VEL_THRESH = 0.1;
-const int ODOMETRY_MEMORY = 5;
-
 RobotFinder::RobotFinder(std::string laser_topic, 
                          float arena_diameter,
                          float max_robot_side,
                          float min_robot_side,
-                         float object_distance_threshold) 
+                         float object_distance_threshold,
+                         float velocity_threshold,
+                         int odometry_memory) 
         :arena_diameter_(arena_diameter), max_robot_side_(max_robot_side),
          min_robot_side_(min_robot_side), 
-         object_distance_threshold_(object_distance_threshold) {
+         object_distance_threshold_(object_distance_threshold),
+         velocity_threshold_(velocity_threshold), 
+         odometry_memory_(odometry_memory) 
+{
     laser_sub_ = nh_.subscribe(laser_topic, 
                                50, 
                                &RobotFinder::laserscan_cb, 
@@ -179,7 +180,7 @@ void RobotFinder::laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg) {
 
         // If the velocity is greater than a threshold then we calculate a
         // new orientation
-        if(velocity > VEL_THRESH) {
+        if(velocity > velocity_threshold_) {
             // Take the change in position and calculate the orientation
             // assuming that the enemy moves in a straight line
             float yaw = atan2(dy, dx);
@@ -245,7 +246,7 @@ void RobotFinder::laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg) {
         float yaw;
         // If the velocity is greater than a threshold then we calculate a
         // new orientation
-        if(velocity > VEL_THRESH) {
+        if(velocity > velocity_threshold_) {
             // Take the change in position and calculate the orientation
             // assuming that the enemy moves in a straight line
             yaw = atan2(dy, dx);
@@ -296,6 +297,6 @@ void RobotFinder::laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg) {
     odom_pub_.publish(enemy_odom);
 
     previous_odoms_.push_back(enemy_odom);
-    while(previous_odoms_.size() > ODOMETRY_MEMORY)
+    while(previous_odoms_.size() > odometry_memory_)
         previous_odoms_.erase(previous_odoms_.begin());
 }

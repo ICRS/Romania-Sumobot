@@ -7,7 +7,8 @@ int main(int argc, char **argv) {
 
     std::string laser_topic;
     float arena_diameter, max_robot_side, min_robot_side, 
-          object_separation_dist;
+          object_separation_dist, velocity_threshold;
+    int odometry_memory;
 
     ros::NodeHandle nh_rel("~");
     bool all_params_found = true;
@@ -37,13 +38,25 @@ int main(int argc, char **argv) {
         all_params_found = false;
     }
 
+    if(!nh_rel.getParam("velocity_threshold", velocity_threshold)) {
+        ROS_FATAL("Failed to get param 'velocity_threshold'");
+        all_params_found = false;
+    }
+
+    if(!nh_rel.getParam("odometry_memory", odometry_memory)) {
+        ROS_FATAL("Failed to get param 'odometry_memory'");
+        all_params_found = false;
+    }
+
     if(!all_params_found) {
         ROS_FATAL("Not all parameters have been successfully loaded.");
         return -1;
     }
 
-    RobotFinder finder(laser_topic, arena_diameter, max_robot_side, 
-                       min_robot_side, object_separation_dist);
+    RobotFinder finder(
+        laser_topic, arena_diameter, max_robot_side, min_robot_side, 
+        object_separation_dist, velocity_threshold, odometry_memory);
+
     ros::spin();
     return 0;
 }
