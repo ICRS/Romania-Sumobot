@@ -11,6 +11,10 @@ from std_msgs.msg import Bool
 from interfearence_msgs.msg import EdgeDetection
 from interfearence_controllers_generic_controller.generic_controller import GenericController
 
+FORWARDS = 2
+BACKWARDS = 3
+TURNING_LEFT = 4
+TURNING_RIGHT = 5
 
 class RandomController(GenericController):
     """
@@ -21,11 +25,15 @@ class RandomController(GenericController):
         GenericController.__init__(self)
 
         # create class variables
-        self.__max_vel = 2.5
         self.a = 1.3963
         self.b = 2.0944
-        self.vel = 0
-        self.theta = 0
+        self.__max_linear_vel = 2.5
+        # linear velocity
+        self.linear_vel = 0
+        # angular 
+        self.angle_turned = 0
+        self.angular_vel = 3
+        self.state = FORWARDS
         # # pose of enemy in our body frame
         # self.p_eb = Pose()
         # # pose of body in starting frame
@@ -60,34 +68,63 @@ class RandomController(GenericController):
         self.publisher.publish(cmd_vel)
 
     def forward(self):
-    		if self.vel < self.__max_vel:
-    				self.vel += 0.1
+    		cmd_vel = Twist()
+    		if self.linear_vel < self.__max_linear_vel:
+    				self.linear_vel += 0.1
     		else:
-    				self.vel = self.__max_vel
-    		rospy.loginfo("self.vel: {}".format(self.vel))
-    		return self.vel
+    				self.linear_vel = self.__max_linear_vel
+    		cmd_vel.linear.x = cmd_vel
+    		self.publisher.publish(cmd_vel)
 
     def backward(self):
-    		if self.vel > -self.__max_vel:
-    				self.vel -= 0.1
+    		cmd_vel = Twist()
+    		if self.linear_vel > -self.__max_linear_vel:
+    				self.linear_vel -= 0.1
     		else:
-    				self.vel = -self.__max_vel
-    		rospy.loginfo("self.vel: {}".format(self.vel))
-    		return self.vel
+    				self.linear_vel = -self.__max_linear_vel
+    		cmd_vel.linear.x = cmd_vel
+    		self.publisher.publish(cmd_vel)
 
-    def turn(self,left):
-    		
+    def turn_left(self,turn_angle):
+    		cmd_vel = Twist()
+    		if self.angle_turned < turn_angle:
+    				cmd_vel.Twist.z = -self.angular_vel
+    				self.publisher.publish(cmd_vel)
+    		else:
+    				self.angle_turned = 0
+    				self.state = FORWARDS
 
+    def turn_right(self,turn_angle):
+    		cmd_vel = Twist()
+    		start_time = rospy.get_time()
+    		if self.angle_turned < turn_angle:
+    				cmd_vel.Twist.z = self.angular_vel
+    				self.publisher.publish(cmd_vel)
+    		else:
+    				self.angle_turned = 0
+    				self.state = FORWARDS
 
 
     def update(self):
         cmd_vel = Twist()
+        if self.state == FORWARDS:
+        		cmd_vel.linear.x = self.forward()
+        		if self.edges[0] and self.edges[1]:
+        				self.linear_vel = 0
+        				self.state = BACKWARDS
+        		elif self.edges[0] and not self.edges[1]:
+        				self.theta = random.random() * self.a + self.b
+        				start_time = rospy.get_time()
+        				self.turn_right(self.theta)
+        elif self.state == "BACKWARDS":
+        		cmd_vel.linear.x = self.backward()
+
         self.theta = self.a * random.random() + self.b
         if self.edges[0] and self.edges[1]:
         		# cmd_vel.linear.x = - self.__max_vel
         		cmd_vel.linear.x = self.backward()
         elif self.edges[0] and not self.edges[1]:
-        		cmd_vel.angular.z = random.random() * self.a + self.b
+        		turn_angle = 
         elif self.edges[1] and not self.edges[0]:
         		cmd_vel.angular.z = -random.random() * self.a - self.b
         elif self.edges[2] or self.edges[3]:
