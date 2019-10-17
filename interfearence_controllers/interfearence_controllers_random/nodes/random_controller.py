@@ -67,48 +67,50 @@ class RandomController(GenericController):
         self.publisher.publish(cmd_vel)
 
     def forward(self):
-		cmd_vel = Twist()
-		if self.linear_vel < self.__max_linear_vel:
-			self.linear_vel += 0.1
-		else:
-			self.linear_vel = self.__max_linear_vel
-		cmd_vel.linear.x = cmd_vel
-		self.publisher.publish(cmd_vel)
+        cmd_vel = Twist()
+        if self.linear_vel < self.__max_linear_vel:
+            self.linear_vel += 0.1
+        else:
+            self.linear_vel = self.__max_linear_vel
+        cmd_vel.linear.x = self.linear_vel
+        self.publisher.publish(cmd_vel)
 
     def backward(self):
-		cmd_vel = Twist()
-		if self.linear_vel > -self.__max_linear_vel:
-			self.linear_vel -= 0.1
-		else:
-			self.linear_vel = -self.__max_linear_vel
-		cmd_vel.linear.x = cmd_vel
-		self.publisher.publish(cmd_vel)
+        cmd_vel = Twist()
+        if self.linear_vel > -self.__max_linear_vel:
+            self.linear_vel -= 0.1
+        else:
+            self.linear_vel = -self.__max_linear_vel
+        cmd_vel.linear.x = self.linear_vel
+        self.publisher.publish(cmd_vel)
 
     def turn_left(self,turn_angle):
-		if self.angle_turned < turn_angle:
-            start_time = rospy.get_time()
+        if self.angle_turned < turn_angle:
+            start_time = rospy.Time.now()
             cmd_vel = Twist()
-			cmd_vel.Twist.z = -self.angular_vel
-			self.publisher.publish(cmd_vel)
-            time_elapsed = rospy.get_time() - start_time
-            self.angle_turned += self.angular_vel * time_elapsed
-		else:
-			self.angle_turned = 0
+            cmd_vel.angular.z = -self.angular_vel
+            self.publisher.publish(cmd_vel)
+            time_elapsed = rospy.Time.now() - start_time
+            self.angle_turned += self.angular_vel * (
+                time_elapsed.secs + 1e9 * time_elapsed.nsecs)
+        else:
+            self.angle_turned = 0
             self.theta = self.a * random.random() + self.b
-			self.state = FORWARDS
+            self.state = FORWARDS
 
     def turn_right(self,turn_angle):
-		if self.angle_turned < turn_angle:
-            start_time = rospy.get_time()
+        if self.angle_turned < turn_angle:
+            start_time = rospy.Time.now()
             cmd_vel = Twist()
-			cmd_vel.Twist.z = self.angular_vel
-			self.publisher.publish(cmd_vel)
-            time_elapsed = rospy.get_time() - start_time
-            self.angle_turned += self.angular_vel * time_elapsed
-		else:
-			self.angle_turned = 0
+            cmd_vel.angular.z = self.angular_vel
+            self.publisher.publish(cmd_vel)
+            time_elapsed = rospy.Time.now() - start_time
+            self.angle_turned += self.angular_vel * (
+                time_elapsed.secs + 1e9 * time_elapsed.nsecs)
+        else:
+            self.angle_turned = 0
             self.theta = self.a * random.random() + self.b
-			self.state = FORWARDS
+            self.state = FORWARDS
 
     def check_edge_sensors(self):
         if self.edges[0] and self.edges[1]:
@@ -124,18 +126,22 @@ class RandomController(GenericController):
     def update(self):
         cmd_vel = Twist()
         if self.state == FORWARDS:
-    		self.forward()
-    		self.check_edge_sensors()
+            self.forward()
+            self.check_edge_sensors()
+            rospy.loginfo("FORWARDS")
         elif self.state == BACKWARDS:
             self.backward()
-    		self.check_edge_sensors()
+            self.check_edge_sensors()
+            rospy.loginfo("BACKWARDS")
         elif self.state == TURNING_LEFT:
             turn_angle = self.a * random.random() + self.b
             self.turn_left(self.theta)
+            rospy.loginfo("LEFT")
         elif self.state == TURNING_RIGHT:
             self.turn_right(self.theta)
+            rospy.loginfo("RIGHT")
         else:
-             rospy.loginfo("State invalid!")
+            rospy.logerr("State invalid!")
 
 
     def get_name(self):
