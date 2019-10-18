@@ -6,6 +6,10 @@
 #include <nav_msgs/Odometry.h>
 #include <Eigen/Geometry>
 
+#include <stack>
+#include <algorithm>
+#include <vector>
+
 #include "dbscan/dbscan.hpp"
 
 class RobotFinder {
@@ -21,6 +25,9 @@ public:
 
 private:
     void laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg);
+
+    // Implementation of graham scan algorithm
+    std::vector<Point> graham_scan(const std::vector<Point>& input);
 
     ros::NodeHandle nh_;
     ros::Subscriber laser_sub_;
