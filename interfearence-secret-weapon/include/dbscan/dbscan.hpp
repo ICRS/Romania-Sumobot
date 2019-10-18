@@ -30,6 +30,7 @@
 
 #include <vector>
 #include <cmath>
+#include <ostream>
 
 #define UNCLASSIFIED -1
 #define CORE_POINT 1
@@ -55,7 +56,10 @@ typedef struct Point_
         this->x /= rhs; this->y /= rhs; this->z /= rhs;
         return *this;
     }
+    friend std::ostream& operator<<(std::ostream& os, const Point_& p);
 }Point;
+
+std::ostream& operator<<(std::ostream& os, const Point& p);
 
 class DBSCAN {
 public:    

@@ -127,20 +127,66 @@ void RobotFinder::laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg) {
 
         float best_weight = position_weigh(enemy_positions[0]);
         Point& best_point = enemy_positions[0];
+        int best_p = 0;
+        int p = 0;
 
         for(const Point& point : enemy_positions) {
-            if(position_weigh(point) < best_weight)
+            if(position_weigh(point) < best_weight) {
                 best_point = point;
+                best_p = p;
+            }
+            p++;
         }
+
+        // Find the contours of the group
+        std::vector<Point> contours = graham_scan(remaining_groups[best_p]);
 
         enemy_odom.pose.pose.position.x = best_point.x;
         enemy_odom.pose.pose.position.y = best_point.y;
         // Enemy hasn't started moving yet, so assume they are facing us
-        // x, y as we set x to be forwards (i.e. if x is 1 and y is 0 the
-        // result should be 0)
-        // Negative as we want them to face us not them facing away from us
-        // Subtracting pi/2 as we're offset by 90 degrees
-        float yaw = -atan2(best_point.x, best_point.y) - 1.5707;
+        // Find the edge that is most perpendicular to us and set the
+        // normal of that to be the forwards vector of the enemy
+        float x1, x2, y1, y2, dot, best_dot, mag;
+        x1 = best_point.x;
+        y1 = best_point.y;
+        mag = sqrt(x1*x1 + y1*y1);
+        x1 /= mag;
+        y1 /= mag;
+        x2 = contours.back().x - contours[0].x;
+        y2 = contours.back().y - contours[0].y;
+        mag = sqrt(x2*x2 + y2*y2);
+        x2 /= mag;
+        y2 /= mag;
+        best_dot = fabs(x1*x2 + y1*y2);
+        // contours[a] - contours[b] ...
+        int a, b;
+        a = contours.size() - 1;
+        b = 0;
+        for(int i = 1; i < contours.size(); i++) {
+            x2 = contours[i-1].x - contours[i].x;
+            y2 = contours[i-1].y - contours[i].y;
+            mag = sqrt(x2*x2 + y2*y2);
+            x2 /= mag;
+            y2 /= mag;
+            dot = fabs(x1*x2 + y1*y2);
+            if(dot < best_dot) {
+               best_dot = dot;
+               a = i-1;
+               b = i;
+            }
+        }
+
+        // We now know the best edge, find the normal to it and calculate 
+        // yaw
+        // yaw will be 180 + asin(1 - dot^2) * sign_of_dot
+        x2 = contours[a].x - contours[b].x;
+        y2 = contours[a].y - contours[b].y;
+        mag = sqrt(x2*x2 + y2*y2);
+        x2 /= mag;
+        y2 /= mag;
+        dot = x2*x2 + y2*y2;
+        float yaw = 3.1415926 + asin(1 - dot*dot) * ((dot < 0) ? -1 : 1);
+
         enemy_odom.pose.pose.orientation.z = sin(yaw/2);
         enemy_odom.pose.pose.orientation.w = cos(yaw/2);
     }
@@ -160,39 +206,59 @@ void RobotFinder::laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg) {
 
         float best_weight = position_weigh(enemy_positions[0]);
         Point& best_point = enemy_positions[0];
+        int p = 0, best_p = 0;
 
         for(const Point& point : enemy_positions) {
-            if(position_weigh(point) < best_weight)
+            if(position_weigh(point) < best_weight) {
                 best_point = point;
+                best_p = p;
+            }
+            p++;
         }
+
+        // Find the contours of the group
+        std::vector<Point> contours = graham_scan(remaining_groups[best_p]);
 
         enemy_odom.pose.pose.position.x = best_point.x;
         enemy_odom.pose.pose.position.y = best_point.y;
+        // Enemy has started moving, so find the edge most similar to the
+        // previous detected orientation
+        float x1, x2, y1, y2, dot, mag, prev_yaw, best_yaw, yaw;
+        prev_yaw = 2*acos(previous_odoms_.back().pose.pose.orientation.w);
+        x1 = best_point.x;
+        y1 = best_point.y;
+        mag = sqrt(x1*x1 + y1*y1);
+        x1 /= mag;
+        y1 /= mag;
+        x2 = contours.back().x - contours[0].x;
+        y2 = contours.back().y - contours[0].y;
+        mag = sqrt(x2*x2 + y2*y2);
+        x2 /= mag;
+        y2 /= mag;
+        dot = x1*x2 + y1*y2;
+        best_yaw = 3.1415926 + asin(1 - dot*dot) * ((dot < 0) ? -1 : 1);
+        for(int i = 1; i < contours.size(); i++) {
+            x2 = contours[i-1].x - contours[i].x;
+            y2 = contours[i-1].y - contours[i].y;
+            mag = sqrt(x2*x2 + y2*y2);
+            x2 /= mag;
+            y2 /= mag;
+            dot = x1*x2 + y1*y2;
+            yaw =  3.1415926 + asin(1 - dot*dot) * ((dot < 0) ? -1 : 1);
+            if(fabs(yaw - prev_yaw) < fabs(best_yaw - prev_yaw))
+               best_yaw = yaw;
+        }
+
+        enemy_odom.pose.pose.orientation.z = sin(best_yaw/2);
+        enemy_odom.pose.pose.orientation.w = cos(best_yaw/2);
 
         // We can now estimate the velocity as the delta position
         float dx = best_point.x - prev.x;
         float dy = best_point.y - prev.y;
         float velocity = sqrt(pow(dx / dt, 2) + pow(dy / dt, 2));
-        ROS_INFO_STREAM("velocity: " << velocity);
         enemy_odom.twist.twist.linear.x = velocity;
 //        enemy_odom.twist.twist.linear.x = (best_point.x - prev.x) / dt;
 //        enemy_odom.twist.twist.linear.y = (best_point.y - prev.y) / dt;
-
-        // If the velocity is greater than a threshold then we calculate a
-        // new orientation
-        if(velocity > velocity_threshold_) {
-            // Take the change in position and calculate the orientation
-            // assuming that the enemy moves in a straight line
-            float yaw = atan2(dy, dx);
-            enemy_odom.pose.pose.orientation.z = sin(yaw/2);
-            enemy_odom.pose.pose.orientation.w = cos(yaw/2);
-        }
-        else {
-            // We don't have enough data to estimate the enemy pose so 
-            // assume yaw is unchanged.
-            enemy_odom.pose.pose.orientation = 
-                previous_odoms_.back().pose.pose.orientation;
-        }
     }
 
     // If we have a previous position and velocity estimate, weigh based
@@ -217,10 +283,14 @@ void RobotFinder::laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg) {
 
         float best_weight = position_weigh(enemy_positions[0]);
         Point& best_point = enemy_positions[0];
+        int p = 0, best_p = 0;
 
         for(const Point& point : enemy_positions) {
-            if(position_weigh(point) < best_weight)
+            if(position_weigh(point) < best_weight) {
                 best_point = point;
+                best_p = p;
+            }
+            p++;
         }
 
         enemy_odom.pose.pose.position.x = best_point.x;
@@ -243,29 +313,41 @@ void RobotFinder::laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg) {
 
         enemy_odom.twist.twist.linear.x = velocity;
 
-        float yaw;
-        // If the velocity is greater than a threshold then we calculate a
-        // new orientation
-        if(velocity > velocity_threshold_) {
-            // Take the change in position and calculate the orientation
-            // assuming that the enemy moves in a straight line
-            yaw = atan2(dy, dx);
+        // Find the contours of the group
+        std::vector<Point> contours = graham_scan(remaining_groups[best_p]);
+
+        enemy_odom.pose.pose.position.x = best_point.x;
+        enemy_odom.pose.pose.position.y = best_point.y;
+        // Enemy has started moving, so find the edge most similar to the
+        // previous detected orientation
+        float x1, x2, y1, y2, dot, mag, prev_yaw, best_yaw, yaw;
+        prev_yaw = 2*acos(previous_odoms_.back().pose.pose.orientation.w);
+        x1 = best_point.x;
+        y1 = best_point.y;
+        mag = sqrt(x1*x1 + y1*y1);
+        x1 /= mag;
+        y1 /= mag;
+        x2 = contours.back().x - contours[0].x;
+        y2 = contours.back().y - contours[0].y;
+        mag = sqrt(x2*x2 + y2*y2);
+        x2 /= mag;
+        y2 /= mag;
+        dot = x1*x2 + y1*y2;
+        best_yaw = 3.1415926 + asin(1 - dot*dot) * ((dot < 0) ? -1 : 1);
+        for(int i = 1; i < contours.size(); i++) {
+            x2 = contours[i-1].x - contours[i].x;
+            y2 = contours[i-1].y - contours[i].y;
+            mag = sqrt(x2*x2 + y2*y2);
+            x2 /= mag;
+            y2 /= mag;
+            dot = x1*x2 + y1*y2;
+            yaw =  3.1415926 + asin(1 - dot*dot) * ((dot < 0) ? -1 : 1);
+            if(fabs(yaw - prev_yaw) < fabs(best_yaw - prev_yaw))
+               best_yaw = yaw;
         }
-        else {
-            // We don't have enough data to estimate the enemy pose so 
-            // assume yaw is unchanged.
-            yaw = 2*acos(previous_odoms_.back().pose.pose.orientation.w);
-        }
-        multiplier = 1;
-        // Moving average of previous yaw estimates
-        for(int i = 0; i < previous_odoms_.size(); i++) {
-            float exp = 1.0 / pow(2, previous_odoms_.size() - i);
-            multiplier += exp;
-            yaw += exp*2*acos(previous_odoms_[i].pose.pose.orientation.w);
-        }
-        yaw /= multiplier;
-        enemy_odom.pose.pose.orientation.z = sin(yaw/2);
-        enemy_odom.pose.pose.orientation.w = cos(yaw/2);
+
+        enemy_odom.pose.pose.orientation.z = sin(best_yaw/2);
+        enemy_odom.pose.pose.orientation.w = cos(best_yaw/2);
     }
 
     // Finally, publish the estimated position of the enemy robot
@@ -299,4 +381,82 @@ void RobotFinder::laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg) {
     previous_odoms_.push_back(enemy_odom);
     while(previous_odoms_.size() > odometry_memory_)
         previous_odoms_.erase(previous_odoms_.begin());
+}
+
+// From https://www.tutorialspoint.com/cplusplus-program-to-implement-graham-scan-algorithm-to-find-the-convex-hull
+std::vector<Point> RobotFinder::graham_scan(const std::vector<Point>& in) {
+    static auto secondTop = [](std::stack<Point>& stk) {
+        Point tmp = stk.top();
+        stk.pop();
+        Point res = stk.top();
+        stk.push(tmp);
+        return res;
+    };
+
+    static auto squaredDist = [](const Point& p1, const Point& p2) {
+        return (p1.x-p2.x) * (p1.x-p2.x) + (p1.y-p2.y) * (p1.y-p2.y);
+    };
+
+    static auto direction = []
+        (const Point& p0, const Point& p1, const Point& p2) 
+    {
+        float val = (p1.y-p0.y) * (p2.x-p1.x) - (p1.x-p0.x) * (p2.y-p1.y);
+        if(fabs(val) <= 1e-5) return 0; // colinear
+        else if(val < 0) return 2; // anticlockwise
+        return 1; // clockwise
+    };
+
+
+    static auto comp = [direction, squaredDist](
+        const Point& p0, const Point& p1, const Point& p2)
+    {
+        int dir = direction(p0, p1, p2);
+        if(!dir)
+            return (squaredDist(p0, p2) > squaredDist(p0, p1))?false:true;
+        return (dir==2) ? false : true;
+    };
+
+    std::vector<Point> hull_pts, points;
+    points = in;
+
+    float minY = points[0].y, min = 0;
+    for(int i = 0; i < points.size(); i++) {
+        int y = points[i].y;
+        if((y < minY) || (minY == y) && points[i].x < points[min].x) {
+            minY = points[i].y;
+            min = i;
+        }
+    }
+    std::swap(points[0], points[min]);
+    std::sort(points.begin()+1, points.end(), 
+              [comp, points](const Point& a, const Point& b) { 
+                  return comp(points[0], a, b); 
+              });
+    int arrSize = 1;
+    for(int i = 1; i < points.size(); i++) {
+        while(i < points.size()-1 &&
+              direction(points[0], points[i], points[i+1]) == 0) i++;
+        points[arrSize] = points[i];
+        arrSize++;
+    }
+
+    if(arrSize < 3)
+        return hull_pts; // Less than 3 points is invalid
+    std::stack<Point> stk;
+    stk.push(points[0]);
+    stk.push(points[1]);
+    stk.push(points[2]);
+    for(int i = 3; i < arrSize; i++) {
+        while(direction(secondTop(stk), stk.top(), points[i]) !=2) {
+            if(stk.size() == 2) break;
+            stk.pop();
+        }
+        stk.push(points[i]);
+    }
+    while(!stk.empty()) {
+        hull_pts.push_back(stk.top());
+        stk.pop();
+    }
+
+    return hull_pts;
 }

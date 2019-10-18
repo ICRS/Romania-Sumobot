@@ -27,6 +27,11 @@
 
 #include "dbscan/dbscan.hpp"
 
+std::ostream& operator<<(std::ostream& os, const Point& p) {
+    os << "[" << p.x << "," << p.y << "," << p.z << "]";
+    return os;
+}
+
 int DBSCAN::run()
 {
     int clusterID = 1;
