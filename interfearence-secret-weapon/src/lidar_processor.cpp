@@ -6,8 +6,9 @@ int main(int argc, char **argv) {
     ros::init(argc, argv, "lidar_processor");
 
     std::string laser_topic;
-    float arena_diameter;
-    float arena_safety_factor;
+    float arena_diameter, max_robot_side, min_robot_side, 
+          object_separation_dist, velocity_threshold;
+    int odometry_memory;
 
     ros::NodeHandle nh_rel("~");
     bool all_params_found = true;
@@ -22,8 +23,28 @@ int main(int argc, char **argv) {
         all_params_found = false;
     }
 
-    if(!nh_rel.getParam("arena_safety_factor", arena_safety_factor)) {
-        ROS_FATAL("Failed to get param 'arena_safety_factor'");
+    if(!nh_rel.getParam("max_robot_side", max_robot_side)) {
+        ROS_FATAL("Failed to get param 'max_robot_side'");
+        all_params_found = false;
+    }
+
+    if(!nh_rel.getParam("min_robot_side", min_robot_side)) {
+        ROS_FATAL("Failed to get param 'min_robot_side'");
+        all_params_found = false;
+    }
+
+    if(!nh_rel.getParam("object_separation_dist", object_separation_dist)) {
+        ROS_FATAL("Failed to get param 'object_separation_dist'");
+        all_params_found = false;
+    }
+
+    if(!nh_rel.getParam("velocity_threshold", velocity_threshold)) {
+        ROS_FATAL("Failed to get param 'velocity_threshold'");
+        all_params_found = false;
+    }
+
+    if(!nh_rel.getParam("odometry_memory", odometry_memory)) {
+        ROS_FATAL("Failed to get param 'odometry_memory'");
         all_params_found = false;
     }
 
@@ -32,7 +53,10 @@ int main(int argc, char **argv) {
         return -1;
     }
 
-    RobotFinder finder(laser_topic, arena_diameter, arena_safety_factor);
+    RobotFinder finder(
+        laser_topic, arena_diameter, max_robot_side, min_robot_side, 
+        object_separation_dist, velocity_threshold, odometry_memory);
+
     ros::spin();
     return 0;
 }
