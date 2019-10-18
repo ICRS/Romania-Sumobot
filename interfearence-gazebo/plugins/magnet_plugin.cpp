@@ -38,6 +38,8 @@ namespace gazebo {
             double force = 
                 MAGNET_FORCE / (1 + MAGNET_CONST * pow(distance, 5));
 
+            force = 300;
+
             if (distance < 0)
                 force = 0;
 
