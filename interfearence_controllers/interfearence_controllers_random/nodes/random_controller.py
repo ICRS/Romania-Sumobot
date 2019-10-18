@@ -69,7 +69,7 @@ class RandomController(GenericController):
     def forward(self):
         cmd_vel = Twist()
         if self.linear_vel < self.__max_linear_vel:
-            self.linear_vel += 0.1
+            self.linear_vel += 0.5
         else:
             self.linear_vel = self.__max_linear_vel
         cmd_vel.linear.x = self.linear_vel
@@ -78,7 +78,7 @@ class RandomController(GenericController):
     def backward(self):
         cmd_vel = Twist()
         if self.linear_vel > -self.__max_linear_vel:
-            self.linear_vel -= 0.1
+            self.linear_vel -= 0.5
         else:
             self.linear_vel = -self.__max_linear_vel
         cmd_vel.linear.x = self.linear_vel
@@ -92,7 +92,7 @@ class RandomController(GenericController):
             self.publisher.publish(cmd_vel)
             time_elapsed = rospy.Time.now() - start_time
             self.angle_turned += self.angular_vel * (
-                time_elapsed.secs + 1e9 * time_elapsed.nsecs)
+                time_elapsed.secs + 1e-9 * time_elapsed.nsecs)
         else:
             self.angle_turned = 0
             self.theta = self.a * random.random() + self.b
@@ -106,7 +106,7 @@ class RandomController(GenericController):
             self.publisher.publish(cmd_vel)
             time_elapsed = rospy.Time.now() - start_time
             self.angle_turned += self.angular_vel * (
-                time_elapsed.secs + 1e9 * time_elapsed.nsecs)
+                time_elapsed.secs + 1e-9 * time_elapsed.nsecs)
         else:
             self.angle_turned = 0
             self.theta = self.a * random.random() + self.b
@@ -116,10 +116,13 @@ class RandomController(GenericController):
         if self.edges[0] and self.edges[1]:
             self.linear_vel = 0
             self.state = BACKWARDS
+            rospy.loginfo("BOTH SENSORS ARE AT EDGE")
         elif self.edges[0] and not self.edges[1]:
             self.state = TURNING_RIGHT
+            rospy.loginfo("LEFT SENSOR IS AT EDGE")
         elif self.edges[1] and not self.edges[0]:
             self.state = TURNING_LEFT
+            rospy.loginfo("RIGHT SENSOR IS AT EDGE")
         else:
             self.state = FORWARDS
 
@@ -127,19 +130,19 @@ class RandomController(GenericController):
         cmd_vel = Twist()
         if self.state == FORWARDS:
             self.forward()
-            self.check_edge_sensors()
-            rospy.loginfo("FORWARDS")
+            # self.check_edge_sensors()
+            # rospy.loginfo("FORWARDS")
         elif self.state == BACKWARDS:
             self.backward()
             self.check_edge_sensors()
-            rospy.loginfo("BACKWARDS")
+            # rospy.loginfo("BACKWARDS")
         elif self.state == TURNING_LEFT:
             turn_angle = self.a * random.random() + self.b
             self.turn_left(self.theta)
-            rospy.loginfo("LEFT")
+            # rospy.loginfo("LEFT")
         elif self.state == TURNING_RIGHT:
             self.turn_right(self.theta)
-            rospy.loginfo("RIGHT")
+            # rospy.loginfo("RIGHT")
         else:
             rospy.logerr("State invalid!")
 
