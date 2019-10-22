@@ -17,6 +17,7 @@ RobotFinder::RobotFinder(std::string laser_topic,
                                50, 
                                &RobotFinder::laserscan_cb, 
                                this);
+    reset_sub_ = nh_.subscribe("/reset", 2, &RobotFinder::reset_cb, this);
     odom_pub_ = nh_.advertise<nav_msgs::Odometry>("enemy_vo", 50);
 
     nh_.getParam("tf_prefix", tf_prefix);
@@ -459,4 +460,11 @@ std::vector<Point> RobotFinder::graham_scan(const std::vector<Point>& in) {
     }
 
     return hull_pts;
+}
+
+void RobotFinder::reset_cb(std_msgs::Bool::ConstPtr msg) {
+    // We want to reset the scanner when the robot is told to launch again
+    if(msg->data) {
+        previous_odoms_.clear();
+    }
 }

@@ -2,6 +2,7 @@
 #define __ROBOT_FINDER_HPP__
 
 #include <ros/ros.h>
+#include <std_msgs/Bool.h>
 #include <sensor_msgs/LaserScan.h>
 #include <nav_msgs/Odometry.h>
 #include <Eigen/Geometry>
@@ -25,12 +26,14 @@ public:
 
 private:
     void laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg);
+    void reset_cb(std_msgs::Bool::ConstPtr msg);
 
     // Implementation of graham scan algorithm
     std::vector<Point> graham_scan(const std::vector<Point>& input);
 
     ros::NodeHandle nh_;
     ros::Subscriber laser_sub_;
+    ros::Subscriber reset_sub_;
     // Odom of **ENEMY** robot
     ros::Publisher odom_pub_;
 
