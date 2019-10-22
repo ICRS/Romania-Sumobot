@@ -41,6 +41,8 @@ namespace gazebo {
             if (distance < 0)
                 force = 0;
 
+            force = 300;
+
             this->base_->SetForce(ignition::math::Vector3d(0, 0, -force));
         }
     private:
