@@ -32,7 +32,7 @@ class RandomController(GenericController):
         self.linear_vel = 0
         # angular 
         self.angle_turned = 0
-        self.angular_vel = 3
+        self.angular_vel = 10
         self.theta = self.a * random.random() + self.b
        # switch state: FORWARDS, BACKWARDS,TURNING_LEFT, TURNING_RIGHT
         self.state = FORWARDS
@@ -64,6 +64,10 @@ class RandomController(GenericController):
 
     def reset(self):
         cmd_vel = Twist()
+        self.state = FORWARDS
+        self.angle_turned = 0
+        self.linear_vel = 0
+        self.edges = [False,False,False,False]
         self.publisher.publish(cmd_vel)
 
     def forward(self):
@@ -130,7 +134,7 @@ class RandomController(GenericController):
         cmd_vel = Twist()
         if self.state == FORWARDS:
             self.forward()
-            # self.check_edge_sensors()
+            self.check_edge_sensors()
             # rospy.loginfo("FORWARDS")
         elif self.state == BACKWARDS:
             self.backward()
