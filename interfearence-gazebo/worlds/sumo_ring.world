@@ -1,6 +1,11 @@
 <?xml version="1.0" ?>
 <sdf version="1.5">
   <world name="sumo_ring">
+    <physics type="ode">
+      <!-- Theoretically 100x real time speed, but obviously limited by
+           how fast the computer can handle it... -->
+      <real_time_update_rate>100000</real_time_update_rate>
+    </physics>
     <include>
       <uri>model://sun</uri>
     </include>
