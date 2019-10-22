@@ -1,5 +1,5 @@
 # Romania-Sumobot
-Cheryl, Neil, Nick, Terence and Victor's robot for Robochallenge Mega Sumo in Romania
+Cheryl, Nick, Terence and Victor's robot for Robochallenge Mega Sumo in Romania
 
 ## Robot Name - InterFEARence
 
