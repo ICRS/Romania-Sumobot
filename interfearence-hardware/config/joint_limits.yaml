@@ -8,7 +8,7 @@ joint_limits:
         has_jerk_limits: true
         max_jerk: 100.0
         has_effort_limits: true
-        max_effort: 2.0
+        max_effort: 10.0
     right_wheel_joint:
         has_position_limits: false
         has_velocity_limits: true
@@ -18,4 +18,4 @@ joint_limits:
         has_jerk_limits: true
         max_jerk: 100.0
         has_effort_limits: true
-        max_effort: 2.0
+        max_effort: 10.0

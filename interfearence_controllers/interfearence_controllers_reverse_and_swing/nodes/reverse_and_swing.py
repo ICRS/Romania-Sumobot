@@ -47,13 +47,13 @@ class ReverseAndSwingController(BasicController):
         self.SWEEPING_FORWARDS_SPEED = 0.5
 
         # Proportional controller for yaw velocity when attacking
-        self.ATTACK_YAW_P_CONSTANT = 70
+        self.ATTACK_YAW_P_CONSTANT = 40
         # Further than this distance from the enemy we move at minimum speed
         self.ATTACK_MIN_SPEED_DISTANCE = 0.7
         # Minimum speed for movement
-        self.ATTACK_MIN_SPEED = 0.1
+        self.ATTACK_MIN_SPEED = 0.4
         # Maximum speed for movement
-        self.ATTACK_MAX_SPEED = 2.0
+        self.ATTACK_MAX_SPEED = 2.5
 
     def reset(self):
         """
