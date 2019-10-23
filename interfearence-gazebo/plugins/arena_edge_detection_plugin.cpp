@@ -1,10 +1,10 @@
 #include "arena_edge_detection_plugin.hpp"
 
 namespace gazebo {
-    GZ_REGISTER_SENSOR_PLUGIN(ArenaEdgeDetectionPlugin);
+    GZ_REGISTER_MODEL_PLUGIN(ArenaEdgeDetectionPlugin);
 
     ArenaEdgeDetectionPlugin::ArenaEdgeDetectionPlugin()
-        :nh_("arena_edge_detection"), previous_result_(false)
+        :nh_("arena_edge_detection") 
     {
         // ctor
     }
@@ -14,7 +14,7 @@ namespace gazebo {
     }
 
     void ArenaEdgeDetectionPlugin::Load(
-        sensors::SensorPtr _parent, sdf::ElementPtr _sdf)
+        physics::ModelPtr _parent, sdf::ElementPtr _sdf)
     {
         if(!ros::isInitialized()) {
             ROS_FATAL_STREAM("A ROS node for Gazebo has not been initialised!!! Unable to load plugin.");
@@ -37,65 +37,54 @@ namespace gazebo {
                                    "'topicName' has not been set!");
             return;
         }
-        if(_sdf->HasElement("upperThreshhold"))
-            upper_threshhold_ = _sdf->Get<float>("upperThreshhold");
+
+        std::string linkName;
+        if(_sdf->HasElement("linkName"))
+            linkName = _sdf->Get<std::string>("linkName");
         else {
-            ROS_FATAL_STREAM_NAMED("ArenaEdgeDetectionPlugin", 
-                                   "'upperThreshhold' has not been set!");
-            return;
-        }
-        if(_sdf->HasElement("lowerThreshhold"))
-            lower_threshhold_ = _sdf->Get<float>("lowerThreshhold");
-        else {
-            ROS_FATAL_STREAM_NAMED("ArenaEdgeDetectionPlugin", 
-                                   "'lowerThreshhold' has not been set!");
+            ROS_FATAL_STREAM_NAMED("ArenaEdgeDetectionPlugin",
+                                   "'linkName' has not been set!");
             return;
         }
 
-        CameraPlugin::Load(_parent, _sdf);
+        this->model = _parent; 
 
-         // copying from CameraPlugin into GazeboRosCameraUtils
-        this->parentSensor_ = this->parentSensor;
-        this->width_ = this->width;
-        this->height_ = this->height;
-        this->depth_ = this->depth;
-        this->format_ = this->format;
-        this->camera_ = this->camera;
-
-        GazeboRosCameraUtils::Load(_parent, _sdf);
-        
         pub_ = nh_.advertise<interfearence_msgs::EdgeDetection>(
             topicname, 1);
 
-        this->parentSensor_->SetActive(true);
-        this->parentSensor->SetActive(true);
+        this->updateConnection = event::Events::ConnectWorldUpdateBegin(
+            std::bind(&ArenaEdgeDetectionPlugin::OnUpdate,this));
 
-        ROS_INFO_NAMED(_parent->Name(), "successfully loaded.");
+        this->link = this->model->GetLink(linkName);
+        if(!link) {
+            ROS_FATAL_STREAM(linkName << " does not exist!");
+            return;
+        }
+        last_update = ros::Time::now();
     }
 
-    void ArenaEdgeDetectionPlugin::OnNewFrame(
-        const unsigned char *_image, unsigned int _width,
-        unsigned int _height, unsigned int _depth,
-        const std::string &_format)
+    void ArenaEdgeDetectionPlugin::OnUpdate()
     {
+        if((ros::Time::now()-last_update).nsec < 5e7)
+            return;
+
+        last_update = ros::Time::now();
+
         interfearence_msgs::EdgeDetection msg;
         msg.header.stamp = ros::Time::now();
         msg.header.frame_id = frame_;
 
-        float avg_brightness;
-        for(unsigned int w = 0; w < _width; w++) {
-            for(unsigned int h = 0; h < _height; h++) {
-                avg_brightness += _image[_height*w+h] / 255.f;
-            }
-        }
-        
-        avg_brightness /= _width * _height;
-        if(avg_brightness > upper_threshhold_)
-            previous_result_ = true;
-        else if(avg_brightness < lower_threshhold_)
-            previous_result_ = false;
-        msg.at_edge = previous_result_;
+        auto sensorPose = this->link->WorldPose();
+        x = sensorPose.Pos().X();
+        y = sensorPose.Pos().Y();
 
+        double dist = sqrt(x*x + y*y);
+        
+        if(dist < 0.67)
+            msg.at_edge = false;
+        else
+            msg.at_edge = true;
+        
         pub_.publish(msg);
     }
 }

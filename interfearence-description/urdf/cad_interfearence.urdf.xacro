@@ -15,6 +15,31 @@
     </plugin>
     <!-- plugin to simulate the electromagnet -->
     <plugin name="magnet" filename="libmagnet_plugin.so"/>
+    <!-- plugins for the edge sensors -->
+    <plugin name="front_left_line_sensor_plugin" 
+            filename="libarena_edge_detection_plugin.so">
+        <frameName>/$(arg robotns)/front_left_line_sensor</frameName>
+        <topicName>/$(arg robotns)/edge_sensors/front_left</topicName>
+        <linkName>front_left_line_sensor</linkName>
+    </plugin>
+    <plugin name="front_right_line_sensor_plugin" 
+            filename="libarena_edge_detection_plugin.so">
+        <frameName>/$(arg robotns)/front_right_line_sensor</frameName>
+        <topicName>/$(arg robotns)/edge_sensors/front_right</topicName>
+        <linkName>front_right_line_sensor</linkName>
+    </plugin>
+    <plugin name="rear_left_line_sensor_plugin" 
+            filename="libarena_edge_detection_plugin.so">
+        <frameName>/$(arg robotns)/rear_left_line_sensor</frameName>
+        <topicName>/$(arg robotns)/edge_sensors/rear_left</topicName>
+        <linkName>rear_left_line_sensor</linkName>
+    </plugin>
+    <plugin name="rear_right_line_sensor_plugin" 
+            filename="libarena_edge_detection_plugin.so">
+        <frameName>/$(arg robotns)/rear_right_line_sensor</frameName>
+        <topicName>/$(arg robotns)/edge_sensors/rear_right</topicName>
+        <linkName>rear_right_line_sensor</linkName>
+    </plugin>
     <self_collide>false</self_collide>
   </gazebo>
 
@@ -89,37 +114,15 @@
   </link>
 
   <gazebo reference="front_left_line_sensor">
-    <sensor name="front_left_line_sensor_sensor" type="camera">
-      <camera name="front_left_camera">
-        <image>
-          <width>1</width>
-          <height>1</height>
-          <format>R8G8B8</format>
-        </image>
-        <clip>
-          <near>0.002</near>
-        </clip>
-      </camera>
-      <plugin name="front_left_edge_detector_plugin" 
-              filename="libarena_edge_detection_plugin.so">
-        <cameraName>front_left_camera</cameraName>
-        <alwaysOn>true</alwaysOn>
-        <updateRate>30</updateRate>
-        <imageTopicName>rgb/image_raw</imageTopicName>
-        <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
-        <frameName>/$(arg robotns)/front_left_line_sensor</frameName>
-        <topicName>/$(arg robotns)/edge_sensors/front_left</topicName>
-        <upperThreshhold>0.52</upperThreshhold>
-        <lowerThreshhold>0.42</lowerThreshhold>
-      </plugin>
-    </sensor>
     <material>Gazebo/Red</material>
   </gazebo>
 
-  <joint name="front_left_line_sensor_joint" type="fixed">
+  <joint name="front_left_line_sensor_joint" type="prismatic">
     <parent link="base_footprint"/>
     <child link="front_left_line_sensor"/>
     <origin rpy="0 0 0" xyz="0.08972 -0.05966  0.000631"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="0" upper="0.0001" effort="0" velocity="0"/>
   </joint>
 
   <link name="front_right_line_sensor">
@@ -142,37 +145,15 @@
   </link>
 
   <gazebo reference="front_right_line_sensor">
-    <sensor name="front_right_line_sensor_sensor" type="camera">
-      <camera name="front_right_camera">
-        <image>
-          <width>1</width>
-          <height>1</height>
-          <format>R8G8B8</format>
-        </image>
-        <clip>
-          <near>0.002</near>
-        </clip>
-      </camera>
-      <plugin name="front_right_edge_detector_plugin" 
-              filename="libarena_edge_detection_plugin.so">
-        <cameraName>front_right_camera</cameraName>
-        <alwaysOn>true</alwaysOn>
-        <updateRate>30</updateRate>
-        <imageTopicName>rgb/image_raw</imageTopicName>
-        <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
-        <frameName>/$(arg robotns)/front_right_line_sensor</frameName>
-        <topicName>/$(arg robotns)/edge_sensors/front_right</topicName>
-        <upperThreshhold>0.52</upperThreshhold>
-        <lowerThreshhold>0.42</lowerThreshhold>
-      </plugin>
-    </sensor>
     <material>Gazebo/Red</material>
   </gazebo>
 
-  <joint name="front_right_line_sensor_joint" type="fixed">
+  <joint name="front_right_line_sensor_joint" type="prismatic">
     <parent link="base_footprint"/>
     <child link="front_right_line_sensor"/>
     <origin rpy="0 0 0" xyz="-0.08972 -0.05966  0.000631"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="0" upper="0.0001" effort="0" velocity="0"/>
   </joint>
 
   <link name="front_scoop">
@@ -384,37 +365,15 @@
   </link>
 
   <gazebo reference="rear_right_line_sensor">
-    <sensor name="rear_right_line_sensor_sensor" type="camera">
-      <camera name="rear_right_camera">
-        <image>
-          <width>1</width>
-          <height>1</height>
-          <format>R8G8B8</format>
-        </image>
-        <clip>
-          <near>0.002</near>
-        </clip>
-      </camera>
-      <plugin name="rear_right_edge_detector_plugin" 
-              filename="libarena_edge_detection_plugin.so">
-        <cameraName>rear_right_camera</cameraName>
-        <alwaysOn>true</alwaysOn>
-        <updateRate>30</updateRate>
-        <imageTopicName>rgb/image_raw</imageTopicName>
-        <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
-        <frameName>/$(arg robotns)/rear_right_line_sensor</frameName>
-        <topicName>/$(arg robotns)/edge_sensors/rear_right</topicName>
-        <upperThreshhold>0.5</upperThreshhold>
-        <lowerThreshhold>0.4</lowerThreshhold>
-      </plugin>
-    </sensor>
     <material>Gazebo/Red</material>
   </gazebo>
 
-  <joint name="rear_right_line_sensor_joint" type="fixed">
+  <joint name="rear_right_line_sensor_joint" type="prismatic">
     <parent link="base_footprint"/>
     <child link="rear_right_line_sensor"/>
     <origin rpy="0 0 0" xyz="-0.08925  0.08981  0.00011"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="0" upper="0.0001" effort="0" velocity="0"/>
   </joint>
 
   <link name="rear_left_line_sensor">
@@ -437,37 +396,15 @@
   </link>
 
   <gazebo reference="rear_left_line_sensor">
-    <sensor name="rear_left_line_sensor_sensor" type="camera">
-      <camera name="rear_left_camera">
-        <image>
-          <width>1</width>
-          <height>1</height>
-          <format>R8G8B8</format>
-        </image>
-        <clip>
-          <near>0.002</near>
-        </clip>
-      </camera>
-      <plugin name="rear_left_edge_detector_plugin" 
-              filename="libarena_edge_detection_plugin.so">
-        <cameraName>rear_left_camera</cameraName>
-        <alwaysOn>true</alwaysOn>
-        <updateRate>30</updateRate>
-        <imageTopicName>rgb/image_raw</imageTopicName>
-        <cameraInfoTopicName>rgb/camera_info</cameraInfoTopicName>
-        <frameName>/$(arg robotns)/rear_left_line_sensor</frameName>
-        <topicName>/$(arg robotns)/edge_sensors/rear_left</topicName>
-        <upperThreshhold>0.5</upperThreshhold>
-        <lowerThreshhold>0.4</lowerThreshhold>
-      </plugin>
-    </sensor>
     <material>Gazebo/Red</material>
   </gazebo>
 
-  <joint name="rear_left_line_sensor_joint" type="fixed">
+  <joint name="rear_left_line_sensor_joint" type="prismatic">
     <parent link="base_footprint"/>
     <child link="rear_left_line_sensor"/>
     <origin rpy="0 0 0" xyz="0.08925 0.08981 0.00011"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="0" upper="0.0001" effort="0" velocity="0"/>
   </joint>
 
 </robot>
