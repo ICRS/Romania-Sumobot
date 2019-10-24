@@ -11,7 +11,7 @@
   <buildtool_depend>catkin</buildtool_depend>
   <depend>interfearence-description</depend>
   <depend>interfearence-secret-weapon</depend>
-  <depend>interfearence-hardware</depend>
+  <depend>interfearence_hardware</depend>
   <depend>interfearence-localisation</depend>
   <depend>robot_pose_ekf</depend>
 </package>

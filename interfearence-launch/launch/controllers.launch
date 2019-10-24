@@ -1,35 +1,47 @@
 <launch>
     <arg name="load_urdf" default="true"/>
+    <arg name="simulation" default="true"/>
 
     <!-- Load URDF -->
     <group if="$(arg load_urdf)">
         <param name="robot_description" 
-               command="cat $(find interfearence-description)/urdf/interfearence.urdf"/>
+               command="$(find xacro)/xacro '$(find interfearence-description)/urdf/cad_interfearence.urdf.xacro'"/>
     </group>
 
     <!-- Load joint controller configurations from YAML -->
-    <rosparam file="$(find interfearence-hardware)/config/interfearence_control.yaml" 
+    <rosparam file="$(find interfearence_hardware)/config/interfearence_control.yaml" 
               command="load"/>
-    <rosparam file="$(find interfearence-hardware)/config/joint_limits.yaml"
+    <rosparam file="$(find interfearence_hardware)/config/joint_limits.yaml"
               command="load"/>
-    <rosparam file="$(find interfearence-hardware)/config/hardware.yaml"
+    <rosparam file="$(find interfearence_hardware)/config/hardware.yaml"
               command="load"/>
 
     <!-- Load the controllers -->
-    <node name="controller_spawner" pkg="controller_manager" type="spawner" 
-          respawn="false" output="screen"
-          args=" 
-            interfearence/controller/state/joint_state_controller
-            interfearence/controller/velocity/left_velocity_controller 
-            interfearence/controller/velocity/right_velocity_controller
-          "/>
+    <group if="$(arg simulation)">
+        <node name="controller_spawner" pkg="controller_manager" 
+              type="spawner" respawn="false" output="screen"
+              args=" 
+                interfearence/controller/state/joint_state_controller
+                interfearence/controller/sim/left_velocity_controller 
+                interfearence/controller/sim/right_velocity_controller
+              "/>
+    </group>
+    <group unless="$(arg simulation)">
+        <node name="controller_spawner" pkg="controller_manager" 
+              type="spawner" respawn="false" output="screen"
+              args=" 
+                interfearence/controller/state/joint_state_controller
+                interfearence/controller/velocity/left_velocity_controller 
+                interfearence/controller/velocity/right_velocity_controller
+              "/>
+    </group>
 
     <!-- robot state publisher -->
     <node name="robot_state_publisher" pkg="robot_state_publisher"
           type="robot_state_publisher" respawn="false" output="screen"/>
     
     <!-- The odometry and velocity control node -->
-    <node name="velocity_control" pkg="interfearence-hardware"
+    <node name="velocity_control" pkg="interfearence_hardware"
           type="velocity_control.py" respawn="false" output="screen">
         <param name="wheel_radius" value="0.0295"/>
         <param name="wheel_separation" value="0.115"/>

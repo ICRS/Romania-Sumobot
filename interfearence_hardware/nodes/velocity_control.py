@@ -250,7 +250,10 @@ if __name__ == '__main__':
     wheel_radius = rospy.get_param("~wheel_radius")
     wheel_separation = rospy.get_param("~wheel_separation")
     publish_tf = rospy.get_param("~publish_tf")
-    tf_prefix = rospy.get_param("tf_prefix")
+    try:
+        tf_prefix = rospy.get_param("tf_prefix")
+    except KeyError:
+        tf_prefix = ""
 
     rospy.Subscriber("cmd_vel", Twist, cmd_vel_cb)
     rospy.Subscriber("/reset", Bool, reset_cb)

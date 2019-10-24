@@ -4,7 +4,7 @@ project(interfearence-launch)
 find_package(catkin REQUIRED COMPONENTS
   interfearence-description
   interfearence-secret-weapon
-  interfearence-hardware
+  interfearence_hardware
   interfearence-localisation
 )
 

@@ -3,7 +3,7 @@
 
 #include <time.h>
 
-#include "hardware/interfearence.hpp"
+#include "interfearence_hardware/interfearence.hpp"
 
 int main(int argc, char **argv) {
     ros::init(argc, argv, "hardware_interface");

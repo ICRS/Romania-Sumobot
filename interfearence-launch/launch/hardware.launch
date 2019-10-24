@@ -1,5 +1,5 @@
 <launch>
     <!-- hardware node -->
-    <node name="hardware" pkg="interfearence-hardware" type="hardware"
+    <node name="hardware" pkg="interfearence_hardware" type="hardware"
           respawn="false" output="screen"/>
 </launch>

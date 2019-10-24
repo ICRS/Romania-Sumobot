@@ -1,5 +1,5 @@
-cmake_minimum_required(VERSION 2.8.3)
-project(interfearence-hardware)
+cmake_minimum_required(VERSION 3.10.2)
+project(interfearence_hardware)
 
 add_compile_options(-std=c++11)
 
@@ -12,21 +12,28 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
+find_package(PythonInterp 3)
+find_package(PythonLibs 3)
+
 catkin_package(
 )
 
+catkin_python_setup()
+
 include_directories(
   include
+  ${PYTHON_INCLUDE_PATH}
   ${catkin_INCLUDE_DIRS}
 )
 
 add_executable(hardware
   src/hardware_controller.cpp
-  src/hardware/interfearence.cpp)
+  src/interfearence_hardware/interfearence.cpp)
 
 add_dependencies(hardware ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 target_link_libraries(hardware
+  ${PYTHON_LIBRARIES}
   ${catkin_LIBRARIES}
 )
 

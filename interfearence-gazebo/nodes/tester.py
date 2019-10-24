@@ -41,23 +41,23 @@ if __name__ == '__main__':
     def reset_controllers():
         reset_1([], 
                 ["interfearence/controller/state/joint_state_controller",
-                 "interfearence/controller/velocity/left_velocity_controller",
-                 "interfearence/controller/velocity/right_velocity_controller"],
+                 "interfearence/controller/sim/left_velocity_controller",
+                 "interfearence/controller/sim/right_velocity_controller"],
                 1)
         reset_2([], 
                 ["interfearence/controller/state/joint_state_controller",
-                 "interfearence/controller/velocity/left_velocity_controller",
-                 "interfearence/controller/velocity/right_velocity_controller"],
+                 "interfearence/controller/sim/left_velocity_controller",
+                 "interfearence/controller/sim/right_velocity_controller"],
                 1)
 
         reset_1(["interfearence/controller/state/joint_state_controller",
-                 "interfearence/controller/velocity/left_velocity_controller",
-                 "interfearence/controller/velocity/right_velocity_controller"],
+                 "interfearence/controller/sim/left_velocity_controller",
+                 "interfearence/controller/sim/right_velocity_controller"],
                 [],
                 1)
         reset_2(["interfearence/controller/state/joint_state_controller",
-                 "interfearence/controller/velocity/left_velocity_controller",
-                 "interfearence/controller/velocity/right_velocity_controller"],
+                 "interfearence/controller/sim/left_velocity_controller",
+                 "interfearence/controller/sim/right_velocity_controller"],
                 [],
                 1)
 

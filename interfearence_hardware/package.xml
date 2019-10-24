@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="2">
-  <name>interfearence-hardware</name>
+  <name>interfearence_hardware</name>
   <version>0.0.0</version>
-  <description>The interfearence-hardware package</description>
+  <description>The interfearence_hardware package</description>
 
   <maintainer email="nickick@todo.todo">nickick</maintainer>
 
