@@ -1,5 +1,5 @@
 #define PY_SSIZE_T_CLEAN
-#include <python3.7m/Python.h>
+#include <python3.6m/Python.h>
 
 #include <hardware_interface/joint_command_interface.h>
 #include <hardware_interface/joint_state_interface.h>

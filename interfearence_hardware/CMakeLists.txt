@@ -12,8 +12,8 @@ find_package(catkin REQUIRED COMPONENTS
   std_msgs
 )
 
-find_package(PythonInterp 3)
-find_package(PythonLibs 3)
+find_package(PythonInterp 3.6 REQUIRED)
+find_package(PythonLibs 3.6 REQUIRED)
 
 catkin_package(
 )
