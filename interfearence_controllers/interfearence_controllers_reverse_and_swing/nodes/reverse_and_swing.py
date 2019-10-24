@@ -170,10 +170,10 @@ class ReverseAndSwingController(BasicController):
         # jumps to attack state
         if self.enemy_pose.position.x < 0:
             self.state = ATTACKING
-            rospy.logerr("State changed to ATTACKING")
+            rospy.logerr("State changed to ATTACKING due to pose")
         if self.project_enemy_distance() < self.ENEMY_PROXIMITY_THRESHOLD:
             self.state = ATTACKING
-            rospy.logerr("State changed to ATTACKING")
+            rospy.logerr("State changed to ATTACKING due to proximity")
 
     def project_enemy_distance(self, project_time=True):
         enemy_yaw = 2 * math.acos(self.enemy_pose.orientation.w)
@@ -181,8 +181,8 @@ class ReverseAndSwingController(BasicController):
         dy = self.enemy_velocity.linear.x * math.sin(enemy_yaw)
         enemy_pos = self.enemy_pose.position
         if project_time:
-            enemy_pos.x += dx / self.PROJECTION_TIME
-            enemy_pos.y += dy / self.PROJECTION_TIME
+            enemy_pos.x += dx * self.PROJECTION_TIME
+            enemy_pos.y += dy * self.PROJECTION_TIME
         return math.sqrt(enemy_pos.x ** 2 + enemy_pos.y ** 2)
 
 if __name__ == '__main__':
