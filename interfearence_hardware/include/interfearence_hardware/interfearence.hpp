@@ -13,7 +13,7 @@ enum class EdgeSensor {
     FRONT_RIGHT,
     REAR_LEFT,
     REAR_RIGHT,
-}
+};
 
 class Interfearence : public hardware_interface::RobotHW {
 public:

@@ -85,10 +85,10 @@ Interfearence::Interfearence() {
 
     this->electromagnet_pin_ = ELECTROMAGNET;
     this->neopixel_pin_ = NEOPIXEL_PIN;
-    this->edge_out_pins_[EdgeSensor::TOP_LEFT] = TOP_LEFT_OUT;
-    this->edge_vcc_pins_[EdgeSensor::TOP_LEFT] = TOP_LEFT_VCC;
-    this->edge_out_pins_[EdgeSensor::TOP_RIGHT] = TOP_RIGHT_OUT;
-    this->edge_vcc_pins_[EdgeSensor::TOP_RIGHT] = TOP_RIGHT_VCC;
+    this->edge_out_pins_[EdgeSensor::FRONT_LEFT] = TOP_LEFT_OUT;
+    this->edge_vcc_pins_[EdgeSensor::FRONT_LEFT] = TOP_LEFT_VCC;
+    this->edge_out_pins_[EdgeSensor::FRONT_RIGHT] = TOP_RIGHT_OUT;
+    this->edge_vcc_pins_[EdgeSensor::FRONT_RIGHT] = TOP_RIGHT_VCC;
     this->edge_out_pins_[EdgeSensor::REAR_LEFT] = BOT_LEFT_OUT;
     this->edge_vcc_pins_[EdgeSensor::REAR_LEFT] = BOT_LEFT_VCC;
     this->edge_out_pins_[EdgeSensor::REAR_RIGHT] = BOT_RIGHT_OUT;
@@ -243,6 +243,7 @@ void Interfearence::release_reset() {
         gpioWrite(this->electromagnet_pin_, 1);
 #endif // __arm__
         prev_reset_state_ = false;
+    }
 }
 
 void Interfearence::edge_sensor_cb(EdgeSensor sensor) {
