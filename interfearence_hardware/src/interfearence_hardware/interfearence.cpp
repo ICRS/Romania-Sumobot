@@ -1,5 +1,7 @@
 #include "interfearence_hardware/interfearence.hpp"
 
+#include <thread>
+
 // Raspberry Pis run on arm processors, while our development computers
 // don't. This way anything Pi specific won't run (or be compiled) on
 // desktops
@@ -117,12 +119,11 @@ Interfearence::Interfearence() {
         gpioSetMode(this->edge_vcc_pins_[sensor], PI_OUTPUT);
         gpioSetMode(this->edge_out_pins_[sensor], PI_INPUT);
         gpioSetISRFunc(this->edge_out_pins_[sensor], FALLING_EDGE, 0,
-            std::function<void()>(
+            (void*)std::function<void(unsigned int, unsigned int, unsigned int)>(
                 // std::bind(&Interfearence::read_edge_sensor, this, sensor)
-                std::bind([this, sensor](
-                    unsigned int, unsigned int, unsigned int) {
-                        this->read_edge_sensor(sensor);
-                }, _1, _2, _3)
+                [this, sensor](unsigned int, unsigned int, unsigned int) {
+                    this->read_edge_sensor(sensor);
+		}
             )
         );
         this->read_edge_sensor(sensor);
@@ -252,9 +253,9 @@ void Interfearence::edge_sensor_cb(EdgeSensor sensor) {
     // fall), and whether we're at edge or not
     auto now = std::chrono::steady_clock::now();
     std::chrono::duration<double> dt = now - this->edge_drop_times_[sensor];
-    if(dt > this->black_thresholds_[sensor])
+    if(dt.count() > this->black_thresholds_[sensor])
         this->edges_[sensor] = false;
-    else if(dt < this->white_thresholds_[sensor])
+    else if(dt.count() < this->white_thresholds_[sensor])
         this->edges_[sensor] = true;
 
     // Set the vcc pin to on
