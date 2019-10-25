@@ -1,4 +1,5 @@
 #include <ros/ros.h>
+#include <std_msgs/Bool.h>
 #include <controller_manager/controller_manager.h>
 
 #include <time.h>
@@ -12,6 +13,13 @@ int main(int argc, char **argv) {
     Interfearence robot;
 
     ros::NodeHandle nh;
+
+    // Create reset publisher and ensure that we're in the reset state
+    ros::Publisher reset_pub = nh.advertise<std_msgs::Bool>("/reset", 2);
+    std_msgs::Bool reset_msg;
+    reset_msg.data = true;
+    reset_pub.publish(reset_msg);
+
     ros::AsyncSpinner spinner(1);
     spinner.start();
     // Create controller manager instance
@@ -25,7 +33,8 @@ int main(int argc, char **argv) {
     ros::Rate sleeper(100);
 
     while(ros::ok()) {
-        // Calculate dt
+        // Calculate dt - intentionally not using ROS time as we want
+        // this to be as accurate as possible
         clock_gettime(CLOCK_MONOTONIC, &current_time);
         elapsed_time = 
             ros::Duration(current_time.tv_sec - last_time.tv_sec
@@ -37,6 +46,10 @@ int main(int argc, char **argv) {
         cm.update(ros::Time::now(), elapsed_time);
         // Publish new commands to robot
         robot.write();
+
+        // Check the reset state and publish it
+        reset_msg.data = robot.check_reset_state();
+        reset_pub.publish(reset_msg);
 
         // Process callbacks
         ros::spinOnce();

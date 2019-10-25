@@ -4,7 +4,7 @@
 
     <!-- Bring up the hardware controllers -->
     <include file="$(find interfearence-launch)/launch/controllers.launch">
-        <arg name="simulation" value="true"/>
+        <arg name="simulation" value="false"/>
     </include>
     <!-- Bring up the actual hardware interface -->
     <include file="$(find interfearence-launch)/launch/hardware.launch"/>

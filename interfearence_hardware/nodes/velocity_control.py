@@ -244,6 +244,8 @@ if __name__ == '__main__':
     global tf_prefix
     global LEFT_CONTROLLER_STATE_TOPIC
     global RIGHT_CONTROLLER_STATE_TOPIC
+    global LEFT_CONTROLLER_COMMAND_TOPIC
+    global RIGHT_CONTROLLER_COMMAND_TOPIC
 
     rospy.init_node("velocity_control")
 
@@ -254,6 +256,17 @@ if __name__ == '__main__':
         tf_prefix = rospy.get_param("tf_prefix")
     except KeyError:
         tf_prefix = ""
+
+    try:
+        sim = rospy.get_param("/use_sim_time")
+        if sim:
+            LEFT_CONTROLLER_COMMAND_TOPIC = "interfearence/controller/sim/left_velocity_controller/command"
+            RIGHT_CONTROLLER_COMMAND_TOPIC = "interfearence/controller/sim/right_velocity_controller/command"
+
+            LEFT_CONTROLLER_STATE_TOPIC = "interfearence/controller/sim/left_velocity_controller/state"
+            RIGHT_CONTROLLER_STATE_TOPIC = "interfearence/controller/sim/right_velocity_controller/state"
+    except KeyError:
+        pass
 
     rospy.Subscriber("cmd_vel", Twist, cmd_vel_cb)
     rospy.Subscriber("/reset", Bool, reset_cb)

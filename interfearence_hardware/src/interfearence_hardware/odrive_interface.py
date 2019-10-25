@@ -16,9 +16,9 @@ class OdriveInterface:
         self._encoder_counts = [0, 0]
 
         # Find the Odrive - block until received
-        print("Waiting for Odrive...")
+        print("\033[1;31mWaiting for Odrive...\033[0m")
         self._odrv = odrive.find_any()
-        print("...Found Odrive")
+        print("\033[1;32m...Found Odrive\033[0m")
 
         # Set ourselves to the reset state
         self.reset();
