@@ -118,16 +118,14 @@ Interfearence::Interfearence() {
         EdgeSensor::REAR_LEFT , EdgeSensor::REAR_RIGHT };
     for(EdgeSensor sensor : sensors) {
         this->edge_drop_times_[sensor] = std::chrono::steady_clock::now();
+        this->edge_cb_helpers_[sensor].interfearence = this;
+        this->edge_cb_helpers_[sensor].sensor = sensor;
         gpioSetMode(this->edge_vcc_pins_[sensor], PI_OUTPUT);
         gpioSetMode(this->edge_out_pins_[sensor], PI_INPUT);
-        gpioSetISRFunc(this->edge_out_pins_[sensor], FALLING_EDGE, 0,
-            (void*)std::function<void(unsigned int, unsigned int, unsigned int)>(
-                // std::bind(&Interfearence::read_edge_sensor, this, sensor)
-                [this, sensor](unsigned int, unsigned int, unsigned int) {
-                    this->read_edge_sensor(sensor);
-		}
-            )
-        );
+        gpioSetISRFuncEx(
+            this->edge_out_pins_[sensor], FALLING_EDGE, 0,
+            &edge_sensor_cb_wrapper, 
+            (void*)&this->edge_cb_helpers_[sensor]);
         this->read_edge_sensor(sensor);
     }
 #endif // __arm__
@@ -276,4 +274,13 @@ void Interfearence::edge_sensor_cb(EdgeSensor sensor) {
     gpioWrite(this->edge_vcc_pins_[sensor], 0);
     this->edge_drop_times_[sensor] = std::chrono::steady_clock::now();
     #endif // __arm__
+}
+
+void edge_sensor_cb_wrapper(
+        int gpio, int edge, uint32_t tick, void *edge_cb_helper)
+{
+    Interfearence::EdgeCbHelper *helper = 
+        reinterpret_cast<Interfearence::EdgeCbHelper*>(edge_cb_helper);
+
+    helper->interfearence->edge_sensor_cb(helper->sensor);
 }

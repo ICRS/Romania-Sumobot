@@ -80,4 +80,12 @@ private:
     // Callback function to regularly check the states of the edge
     // sensors
     void edge_sensor_cb(EdgeSensor sensor);
+    struct EdgeCbHelper {
+        Interfearence *interfearence;
+        EdgeSensor sensor;
+    }
+    std::map<EdgeSensor, EdgeCbHelper> edge_cb_helpers_;
+
+    friend void edge_sensor_cb_wrapper(
+        int gpio, int edge, uint32_t tick, void *edge_cb_helper);
 };
