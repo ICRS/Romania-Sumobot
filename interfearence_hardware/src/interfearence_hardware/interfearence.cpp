@@ -13,7 +13,7 @@
 #define ELECTROMAGNET 7
 
 // Neopixel
-#define NEOPIXEL_PIN  5
+#define NEOPIXEL_PIN  18
 
 // Edge sensors
 #define TOP_LEFT_OUT  26
@@ -47,11 +47,13 @@ Interfearence::Interfearence() {
 
     // Connect and register the joint position interface
     hardware_interface::JointHandle vel_handle_l(
-        jnt_state_interface_.getHandle("left_wheel_joint"), &cmd[0]);
+       // jnt_state_interface_.getHandle("left_wheel_joint"), &cmd[0]);
+        state_handle_l, &cmd[0]);
     jnt_vel_interface_.registerHandle(vel_handle_l);
 
     hardware_interface::JointHandle vel_handle_r(
-        jnt_state_interface_.getHandle("right_wheel_joint"), &cmd[1]);
+       // jnt_state_interface_.getHandle("right_wheel_joint"), &cmd[1]);
+        state_handle_r, &cmd[1]);
     jnt_vel_interface_.registerHandle(vel_handle_r);
 
     registerInterface(&jnt_vel_interface_);
@@ -165,8 +167,10 @@ void Interfearence::read() {
     eff[1] = this->get_wheel_eff(1);
 
     // TODO: flick an LED?
-    ROS_INFO_STREAM_THROTTLE(10, "Battery Voltage: " << this->get_battery_voltage());
-
+    ROS_WARN_STREAM_THROTTLE(
+        10, "Battery Voltage: " << this->get_battery_voltage());
+    ROS_INFO_STREAM_THROTTLE(
+        1, "Wheel velocities: " << vel[0] << ", " << vel[1]);
 }
 
 void Interfearence::set_wheel_vel(int axis, double vel) {

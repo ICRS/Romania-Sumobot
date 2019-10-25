@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
     reset_msg.data = true;
     reset_pub.publish(reset_msg);
 
-    ros::AsyncSpinner spinner(1);
+    ros::AsyncSpinner spinner(2);
     spinner.start();
     // Create controller manager instance
     controller_manager::ControllerManager cm(&robot, nh);
@@ -37,9 +37,8 @@ int main(int argc, char **argv) {
         // this to be as accurate as possible
         clock_gettime(CLOCK_MONOTONIC, &current_time);
         elapsed_time = 
-            ros::Duration(current_time.tv_sec - last_time.tv_sec
-                        + (current_time.tv_nsec - last_time.tv_nsec) 
-                        / 1000000000.0);
+            ros::Duration((current_time.tv_sec - last_time.tv_sec)
+                        + (current_time.tv_nsec - last_time.tv_nsec) / 1e9);
         last_time = current_time;
         // Read the current robot joint states
         robot.read();
@@ -51,8 +50,6 @@ int main(int argc, char **argv) {
         reset_msg.data = robot.check_reset_state();
         reset_pub.publish(reset_msg);
 
-        // Process callbacks
-        ros::spinOnce();
         sleeper.sleep();
     }
 }
