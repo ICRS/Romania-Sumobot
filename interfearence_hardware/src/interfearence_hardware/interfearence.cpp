@@ -32,33 +32,46 @@
 #define KILL_PIN      8
 
 Interfearence::Interfearence() {
+    /// SETUP ROS CONTROL STUFF
+
     // Connect and register the joint state interface
     hardware_interface::JointStateHandle state_handle_l("left_wheel_joint", 
-                                                        &pos[0],
-                                                        &vel[0],
-                                                        &eff[0]);
-    jnt_state_interface_.registerHandle(state_handle_l);
-
-    hardware_interface::JointStateHandle state_handle_r("right_wheel_joint", 
                                                         &pos[1],
                                                         &vel[1],
                                                         &eff[1]);
+    jnt_state_interface_.registerHandle(state_handle_l);
+
+    hardware_interface::JointStateHandle state_handle_r("right_wheel_joint", 
+                                                        &pos[0],
+                                                        &vel[0],
+                                                        &eff[0]);
     jnt_state_interface_.registerHandle(state_handle_r);
 
     registerInterface(&jnt_state_interface_);
 
-    // Connect and register the joint position interface
+    // Connect and register the joint velocity interface
     hardware_interface::JointHandle vel_handle_l(
-       // jnt_state_interface_.getHandle("left_wheel_joint"), &cmd[0]);
-        state_handle_l, &cmd[0]);
+        state_handle_l, &cmd[1]);
     jnt_vel_interface_.registerHandle(vel_handle_l);
 
     hardware_interface::JointHandle vel_handle_r(
-       // jnt_state_interface_.getHandle("right_wheel_joint"), &cmd[1]);
-        state_handle_r, &cmd[1]);
+        state_handle_r, &cmd[0]);
     jnt_vel_interface_.registerHandle(vel_handle_r);
 
     registerInterface(&jnt_vel_interface_);
+
+    // Connect and register the joint effort interface
+    hardware_interface::JointHandle eff_handle_l(
+        state_handle_l, &cmd[1]);
+    jnt_eff_interface_.registerHandle(eff_handle_l);
+
+    hardware_interface::JointHandle eff_handle_r(
+        state_handle_r, &cmd[0]);
+    jnt_eff_interface_.registerHandle(eff_handle_r);
+
+    registerInterface(&jnt_eff_interface_);
+
+    /// SETUP ODRIVE STUFF
 
     // Initialise the python interpreter
     Py_Initialize();
@@ -86,6 +99,12 @@ Interfearence::Interfearence() {
         throw std::runtime_error("Failed to instantiate OdriveInterface");
         return;
     }
+
+    // Reset the odrive
+    this->prev_reset_state_ = false;
+    this->reset();
+
+    /// SETUP GPIO STUFF
 
     this->electromagnet_pin_ = ELECTROMAGNET;
     this->neopixel_pin_ = NEOPIXEL_PIN;
@@ -148,6 +167,10 @@ void Interfearence::write() {
     // Write to the Odrive
     this->set_wheel_vel(0, cmd[0]);
     this->set_wheel_vel(1, cmd[1]);
+    //this->set_wheel_eff(0, cmd[0]);
+    //this->set_wheel_eff(1, cmd[1]);
+    ROS_INFO_STREAM_THROTTLE(
+        1,"Setting effort of [" << cmd[0] << "," << cmd[1] << "]");
 }
 
 void Interfearence::read() {
@@ -176,6 +199,12 @@ void Interfearence::set_wheel_vel(int axis, double vel) {
     // Write the wheel velocities to the Odrive
     PyObject_CallMethod(
         odrive_interface_, "set_wheel_vel", "(i, d)", axis, vel);
+}
+
+void Interfearence::set_wheel_eff(int axis, double eff) {
+    // Write the wheel efforts(currents) to the Odrive
+    PyObject_CallMethod(
+        odrive_interface_, "set_wheel_eff", "(i, d)", axis, eff);
 }
 
 double Interfearence::get_wheel_vel(int axis, double dt) {
@@ -235,6 +264,7 @@ void Interfearence::reset() {
         gpioWrite(this->electromagnet_pin_, 0);
 #endif // __arm__
         prev_reset_state_ = true;
+        ROS_WARN("Entering Reset State");
     }
 }
 
@@ -246,6 +276,7 @@ void Interfearence::release_reset() {
         gpioWrite(this->electromagnet_pin_, 1);
 #endif // __arm__
         prev_reset_state_ = false;
+        ROS_WARN("Exiting Reset State");
     }
 }
 

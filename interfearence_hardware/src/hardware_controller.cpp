@@ -50,6 +50,8 @@ int main(int argc, char **argv) {
         reset_msg.data = robot.check_reset_state();
         reset_pub.publish(reset_msg);
 
+        ROS_WARN_STREAM_THROTTLE(5, "dt: " << elapsed_time);
+
         sleeper.sleep();
     }
 }

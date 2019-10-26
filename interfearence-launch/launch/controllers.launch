@@ -5,7 +5,7 @@
     <!-- Load URDF -->
     <group if="$(arg load_urdf)">
         <param name="robot_description" 
-               command="$(find xacro)/xacro '$(find interfearence-description)/urdf/cad_interfearence.urdf.xacro'"/>
+               command="$(find xacro)/xacro '$(find interfearence-description)/urdf/hardware_interfearence.urdf.xacro'"/>
     </group>
 
     <!-- Load joint controller configurations from YAML -->

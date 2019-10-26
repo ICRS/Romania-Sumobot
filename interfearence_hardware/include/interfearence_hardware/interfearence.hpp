@@ -35,6 +35,7 @@ public:
 private:
     // ROS Control variables
     hardware_interface::JointStateInterface jnt_state_interface_;
+    hardware_interface::EffortJointInterface jnt_eff_interface_;
     hardware_interface::VelocityJointInterface jnt_vel_interface_;
     double cmd[2];
     double pos[2];
@@ -49,6 +50,7 @@ private:
 
     // Function wrappers for python call to the odrive
     void set_wheel_vel(int axis, double velocity);
+    void set_wheel_eff(int axis, double eff);
     double get_wheel_vel(int axis, double dt);
     double get_wheel_eff(int axis);
     double get_battery_voltage();
@@ -83,7 +85,7 @@ private:
     struct EdgeCbHelper {
         Interfearence *interfearence;
         EdgeSensor sensor;
-    }
+    };
     std::map<EdgeSensor, EdgeCbHelper> edge_cb_helpers_;
 
     friend void edge_sensor_cb_wrapper(
