@@ -7,6 +7,7 @@
          - random
          - train_rush
          - swinger
+         - side_push
         -->
     <arg name="controller_type" default="none"/>
     <!-- Should this launch file launch the gazebo sim?
@@ -64,6 +65,11 @@
             <node name="swinger" 
                   pkg="interfearence_controllers_reverse_and_swing"
                   type="reverse_and_swing.py"/>
+        </group>
+        <group if="$(eval arg('controller_type') == 'side_push')">
+            <node name="side_push"
+                  pkg="interfearence_controllers_side_push"
+                  type="side_push.py"/>
         </group>
     </group>
 
