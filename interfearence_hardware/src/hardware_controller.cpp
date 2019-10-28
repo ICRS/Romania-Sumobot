@@ -9,9 +9,6 @@
 int main(int argc, char **argv) {
     ros::init(argc, argv, "hardware_interface");
     
-    // Create robot instance
-    Interfearence robot;
-
     ros::NodeHandle nh;
 
     // Create reset publisher and ensure that we're in the reset state
@@ -22,8 +19,15 @@ int main(int argc, char **argv) {
 
     ros::AsyncSpinner spinner(2);
     spinner.start();
+
+    // Create robot instance
+    Interfearence robot;
+
     // Create controller manager instance
     controller_manager::ControllerManager cm(&robot, nh);
+
+    // Setup the odrive
+    robot.setup_odrive();
 
     ros::Duration elapsed_time;
     struct timespec last_time, current_time;
@@ -51,6 +55,13 @@ int main(int argc, char **argv) {
         reset_pub.publish(reset_msg);
 
         ROS_WARN_STREAM_THROTTLE(5, "dt: " << elapsed_time);
+
+        if(robot.check_errors()) {
+            // Not sure what to do? For now just sleep for 0.1s and 
+            // then clear the error
+            ros::Duration(0.1).sleep();
+            robot.clear_errors();
+        }
 
         sleeper.sleep();
     }

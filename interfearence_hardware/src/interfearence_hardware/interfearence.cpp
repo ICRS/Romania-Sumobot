@@ -32,6 +32,24 @@
 #define KILL_PIN      8
 
 Interfearence::Interfearence() {
+    this->setup_ros_control();
+    this->setup_gpio();
+}
+
+Interfearence::~Interfearence() {
+    // Stop the odrive from moving
+    this->reset();
+
+    // Uninitialise Python
+    Py_Finalize();
+
+#ifdef __arm__    
+    // Uninitialise PiGPIO
+    gpioTerminate();
+#endif // __arm__
+}
+
+void Interfearence::setup_ros_control() {
     /// SETUP ROS CONTROL STUFF
 
     // Connect and register the joint state interface
@@ -70,7 +88,9 @@ Interfearence::Interfearence() {
     jnt_eff_interface_.registerHandle(eff_handle_r);
 
     registerInterface(&jnt_eff_interface_);
+}
 
+void Interfearence::setup_odrive() {
     /// SETUP ODRIVE STUFF
 
     // Initialise the python interpreter
@@ -103,7 +123,9 @@ Interfearence::Interfearence() {
     // Reset the odrive
     this->prev_reset_state_ = false;
     this->reset();
+}
 
+void Interfearence::setup_gpio() {
     /// SETUP GPIO STUFF
 
     this->electromagnet_pin_ = ELECTROMAGNET;
@@ -150,19 +172,6 @@ Interfearence::Interfearence() {
 #endif // __arm__
 }
 
-Interfearence::~Interfearence() {
-    // Stop the odrive from moving
-    this->reset();
-
-    // Uninitialise Python
-    Py_Finalize();
-
-#ifdef __arm__    
-    // Uninitialise PiGPIO
-    gpioTerminate();
-#endif // __arm__
-}
-
 void Interfearence::write() {
     // Write to the Odrive
     this->set_wheel_vel(0, cmd[0]);
@@ -170,7 +179,7 @@ void Interfearence::write() {
     //this->set_wheel_eff(0, cmd[0]);
     //this->set_wheel_eff(1, cmd[1]);
     ROS_INFO_STREAM_THROTTLE(
-        1,"Setting effort of [" << cmd[0] << "," << cmd[1] << "]");
+        1,"Setting velocity of [" << cmd[0] << "," << cmd[1] << "]");
 }
 
 void Interfearence::read() {
@@ -254,6 +263,23 @@ bool Interfearence::check_reset_state() {
         release_reset();
 
     return state;
+}
+
+bool Interfearence::check_errors() {
+    PyObject *err = PyObject_CallMethod(
+        odrive_interface_, "check_errors", NULL);
+    if(!err) {
+        PyErr_Print();
+        throw std::runtime_error("Failed to get errors");
+        return 0;
+    }
+    return PyObject_IsTrue(err);
+}
+
+void Interfearence::clear_errors() {
+    PyObject_CallMethod(odrive_interface_, "clear_errors", NULL);
+    this->reset();
+    this->release_reset();
 }
 
 void Interfearence::reset() {

@@ -32,7 +32,18 @@ public:
     bool read_edge_sensor(EdgeSensor sensor) { 
         return this->edges_[sensor]; 
     };
+    // Check whether the Odrive has thrown an error
+    bool check_errors();
+    // Clear an error thrown by the odrive
+    void clear_errors();
+    // Called by the main function as it takes a while and causes ROS
+    // Control to fail to find the controller
+    void setup_odrive();
 private:
+    // Setup functions
+    void setup_ros_control();
+    void setup_gpio();
+
     // ROS Control variables
     hardware_interface::JointStateInterface jnt_state_interface_;
     hardware_interface::EffortJointInterface jnt_eff_interface_;
