@@ -34,7 +34,7 @@ int main(int argc, char **argv) {
     clock_gettime(CLOCK_MONOTONIC, &last_time);
 
     // 100 Hz update rate
-    ros::Rate sleeper(100);
+    ros::Rate sleeper(1000);
 
     while(ros::ok()) {
         // Calculate dt - intentionally not using ROS time as we want

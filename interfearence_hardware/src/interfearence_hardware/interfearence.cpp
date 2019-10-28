@@ -174,12 +174,12 @@ void Interfearence::setup_gpio() {
 
 void Interfearence::write() {
     // Write to the Odrive
-    this->set_wheel_vel(0, cmd[0]);
-    this->set_wheel_vel(1, cmd[1]);
-    //this->set_wheel_eff(0, cmd[0]);
-    //this->set_wheel_eff(1, cmd[1]);
+    //this->set_wheel_vel(0, cmd[0]);
+    //this->set_wheel_vel(1, cmd[1]);
+    this->set_wheel_eff(0, cmd[0]);
+    this->set_wheel_eff(1, cmd[1]);
     ROS_INFO_STREAM_THROTTLE(
-        1,"Setting velocity of [" << cmd[0] << "," << cmd[1] << "]");
+        1,"Setting effort of [" << cmd[0] << "," << cmd[1] << "]");
 }
 
 void Interfearence::read() {
