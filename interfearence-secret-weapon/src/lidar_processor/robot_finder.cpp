@@ -11,20 +11,67 @@ RobotFinder::RobotFinder(std::string laser_topic,
          min_robot_side_(min_robot_side), 
          object_distance_threshold_(object_distance_threshold),
          velocity_threshold_(velocity_threshold), 
-         odometry_memory_(odometry_memory) 
+         odometry_memory_(odometry_memory), laser_topic_(laser_topic)
 {
-    laser_sub_ = nh_.subscribe(laser_topic, 
-                               50, 
-                               &RobotFinder::laserscan_cb, 
+    calibration_data_size_ = 0;
+    // Start with the calibration callback
+    laser_sub_ = nh_.subscribe(laser_topic,
+                               50,
+                               &RobotFinder::calibration_cb,
                                this);
     reset_sub_ = nh_.subscribe("/reset", 2, &RobotFinder::reset_cb, this);
     odom_pub_ = nh_.advertise<nav_msgs::Odometry>("enemy_vo", 50);
+    debug_point_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>(
+        "laser_scan_point_cloud", 50);
 
     nh_.getParam("tf_prefix", tf_prefix);
 }
 
 RobotFinder::~RobotFinder() {
     // dtor
+}
+
+void RobotFinder::calibrate() {
+    while(calibration_data_size_ < 10) {
+        ros::spinOnce();
+        ros::Duration(0.05).sleep();
+    }
+    
+    // Loop through each ray and if the distance is less than 
+    // CALIBRATION_THRESHOLD more than 100*RATIO% of the time then count it
+    // as a location on the robot
+    const float CALIBRATION_THRESHOLD = 0.1;
+    const float RATIO = 0.85;
+    std::vector<float> thresholds;
+    thresholds.resize(calibration_data_[0].size());
+    for(auto vec : calibration_data_) {
+        for(int i = 0; i < vec.size(); i++) {
+            if(vec[i] > CALIBRATION_THRESHOLD || std::isnan(vec[i])) {
+                thresholds[i] += 1.0 / calibration_data_.size();
+            }
+        }
+    }
+    for(int i = 0; i < thresholds.size(); i++) {
+        if(thresholds[i] < RATIO) {
+            ignore_scans_.push_back(i);
+            ROS_INFO_STREAM(i);
+        }
+    }
+
+    ROS_INFO_STREAM("Calibration completed");
+
+    // Switch back to the normal callback
+    laser_sub_ = nh_.subscribe(laser_topic_, 
+                               50, 
+                               &RobotFinder::laserscan_cb, 
+                               this);
+}
+
+void RobotFinder::calibration_cb(sensor_msgs::LaserScan::ConstPtr msg) {
+    calibration_data_size_++;
+    calibration_data_.push_back({});
+    for(auto range : msg->ranges)
+        calibration_data_.back().push_back(range);
 }
 
 void RobotFinder::laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg) {
@@ -34,8 +81,11 @@ void RobotFinder::laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg) {
     float scans = (msg->angle_max - msg->angle_min) / msg->angle_increment;
     for(int i = 0; i < scans; i++) {
         float dist = msg->ranges[i];
-        if(msg->range_min < dist && dist < msg->range_max 
-           && dist < arena_diameter_) {
+        if(std::find(ignore_scans_.begin(), 
+                     ignore_scans_.end(), i) == ignore_scans_.end() &&
+           msg->range_min < dist && dist < msg->range_max
+           && dist < arena_diameter_)
+        {
             detections.push_back(Point(dist*cos(angle),
                                        dist*sin(angle),
                                        0));
@@ -96,8 +146,8 @@ void RobotFinder::laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg) {
 
     // If there are no groups then return
     if(!remaining_groups.size()) {
-        ROS_WARN_STREAM("[" << tf_prefix
-                        << "] No groups of points found!!!");
+        ROS_WARN_STREAM_THROTTLE(
+            1, "[" << tf_prefix << "] No groups of points found!!!");
         return;
     }
 
@@ -111,6 +161,19 @@ void RobotFinder::laserscan_cb(sensor_msgs::LaserScan::ConstPtr msg) {
             enemy_positions.back() += point;
         enemy_positions.back() /= group.size();
     }
+
+    sensor_msgs::PointCloud cloud_msg;
+    cloud_msg.header = msg->header;
+    sensor_msgs::ChannelFloat32 channel;
+    channel.name = "intensity";
+    for(Point p : enemy_positions) {
+        geometry_msgs::Point32 gm_p;
+        gm_p.x = p.x; gm_p.y = p.y; gm_p.z = p.z;
+        cloud_msg.points.push_back(gm_p);
+        channel.values.push_back(sqrt(p.x*p.x + p.y*p.y));
+    }
+    cloud_msg.channels.push_back(channel);
+    debug_point_cloud_pub_.publish(cloud_msg);
 
     // Now select the most likely candidate for the enemy position.
 

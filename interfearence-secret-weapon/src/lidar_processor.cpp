@@ -57,6 +57,8 @@ int main(int argc, char **argv) {
         laser_topic, arena_diameter, max_robot_side, min_robot_side, 
         object_separation_dist, velocity_threshold, odometry_memory);
 
+    finder.calibrate();
+
     ros::spin();
     return 0;
 }

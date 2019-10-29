@@ -342,7 +342,7 @@
   <joint name="hokuyo_joint" type="fixed">
     <parent link="base_footprint"/>
     <child link="hokuyo"/>
-    <origin rpy="0 -0.03 -1.57" xyz="-8.000e-05 -3.485e-02  2.744e-02"/>
+    <origin rpy="3.14 0.0 -1.57" xyz="-8.000e-05 -3.485e-02  2.744e-02"/>
   </joint>
 
   <link name="rear_right_line_sensor">
