@@ -102,3 +102,7 @@ private:
     friend void edge_sensor_cb_wrapper(
         int gpio, int edge, uint32_t tick, void *edge_cb_helper);
 };
+
+void edge_sensor_cb_wrapper(
+    int gpio, int edge, uint32_t tick, void *edge_cb_helper);
+
