@@ -27,12 +27,12 @@ class RandomController(GenericController):
         # create class variables
         self.a = 0.0000
         self.b = 0.001
-        self.__max_linear_vel = 2
+        self.__max_linear_vel = 0.5
         # linear velocity
         self.linear_vel = 0
         # angular 
         self.angle_turned = 0
-        self.angular_vel = 10
+        self.angular_vel = 9
         self.theta = self.a * random.random() + self.b
        # switch state: FORWARDS, BACKWARDS,TURNING_LEFT, TURNING_RIGHT
         self.state = FORWARDS

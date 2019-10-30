@@ -16,13 +16,8 @@ RIGHT_CONTROLLER_COMMAND_TOPIC = "interfearence/controller/velocity/right_veloci
 LEFT_CONTROLLER_STATE_TOPIC = "interfearence/controller/velocity/left_velocity_controller/state"
 RIGHT_CONTROLLER_STATE_TOPIC = "interfearence/controller/velocity/right_velocity_controller/state"
 
-left_pub = rospy.Publisher(LEFT_CONTROLLER_COMMAND_TOPIC, 
-                           Float64, 
-                           queue_size=1)
-
-right_pub = rospy.Publisher(RIGHT_CONTROLLER_COMMAND_TOPIC, 
-                            Float64, 
-                            queue_size=1)
+left_pub = None
+right_pub = None
 
 odom_pub = rospy.Publisher("odometry/measured", Odometry, queue_size=1)
 
@@ -246,6 +241,8 @@ if __name__ == '__main__':
     global RIGHT_CONTROLLER_STATE_TOPIC
     global LEFT_CONTROLLER_COMMAND_TOPIC
     global RIGHT_CONTROLLER_COMMAND_TOPIC
+    global left_pub
+    global right_pub
 
     rospy.init_node("velocity_control")
 
@@ -258,15 +255,23 @@ if __name__ == '__main__':
         tf_prefix = ""
 
     try:
-        sim = rospy.get_param("/use_sim_time")
+        sim = rospy.get_param("~simulation")
         if sim:
             LEFT_CONTROLLER_COMMAND_TOPIC = "interfearence/controller/sim/left_velocity_controller/command"
             RIGHT_CONTROLLER_COMMAND_TOPIC = "interfearence/controller/sim/right_velocity_controller/command"
 
             LEFT_CONTROLLER_STATE_TOPIC = "interfearence/controller/sim/left_velocity_controller/state"
             RIGHT_CONTROLLER_STATE_TOPIC = "interfearence/controller/sim/right_velocity_controller/state"
+
     except KeyError:
         pass
+
+    left_pub = rospy.Publisher(LEFT_CONTROLLER_COMMAND_TOPIC, 
+                               Float64, 
+                               queue_size=1)
+    right_pub = rospy.Publisher(RIGHT_CONTROLLER_COMMAND_TOPIC, 
+                                Float64, 
+                                queue_size=1)
 
     rospy.Subscriber("cmd_vel", Twist, cmd_vel_cb)
     rospy.Subscriber("/reset", Bool, reset_cb)

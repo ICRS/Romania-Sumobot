@@ -9,6 +9,7 @@ int main(int argc, char **argv) {
     float arena_diameter, max_robot_side, min_robot_side, 
           object_separation_dist, velocity_threshold;
     int odometry_memory;
+    bool calibrate;
 
     ros::NodeHandle nh_rel("~");
     bool all_params_found = true;
@@ -48,16 +49,23 @@ int main(int argc, char **argv) {
         all_params_found = false;
     }
 
+    if(!nh_rel.getParam("calibrate", calibrate)) {
+        ROS_FATAL("Failed to get param 'calibrate'");
+        all_params_found = false;
+    }
+
     if(!all_params_found) {
         ROS_FATAL("Not all parameters have been successfully loaded.");
         return -1;
     }
 
     RobotFinder finder(
-        laser_topic, arena_diameter, max_robot_side, min_robot_side, 
-        object_separation_dist, velocity_threshold, odometry_memory);
+        laser_topic, arena_diameter, max_robot_side, min_robot_side,
+        object_separation_dist, velocity_threshold, odometry_memory,
+        calibrate);
 
-    finder.calibrate();
+    if(calibrate)
+        finder.calibrate();
 
     ros::spin();
     return 0;

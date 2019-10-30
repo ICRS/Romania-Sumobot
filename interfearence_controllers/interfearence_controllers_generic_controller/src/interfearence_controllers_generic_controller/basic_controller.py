@@ -77,13 +77,13 @@ class BasicController(GenericController):
     def edge_callback(self, msg):
         frame = msg.header.frame_id
         if frame == '/' + self.tf_prefix + 'front_right_line_sensor':
-            front_right_edge = msg.at_edge
+            self.front_right_edge = msg.at_edge
         elif frame == '/' + self.tf_prefix + 'front_left_line_sensor':
-            front_left_edge = msg.at_edge
+            self.front_left_edge = msg.at_edge
         elif frame == '/' + self.tf_prefix + 'rear_right_line_sensor':
-            rear_right_edge = msg.at_edge
+            self.rear_right_edge = msg.at_edge
         elif frame == '/' + self.tf_prefix + 'rear_left_line_sensor':
-            rear_left_edge = msg.at_edge
+            self.rear_left_edge = msg.at_edge
         else:
             raise RuntimeError(
                 "{} not a valid edge callback option!".format(frame))

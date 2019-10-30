@@ -57,9 +57,9 @@ int main(int argc, char **argv) {
         ROS_WARN_STREAM_THROTTLE(5, "dt: " << elapsed_time);
 
         if(robot.check_errors()) {
-            // Not sure what to do? For now just sleep for 0.1s and 
+            // Not sure what to do? For now just sleep for 0.2s and 
             // then clear the error
-            ros::Duration(0.1).sleep();
+            ros::Duration(0.2).sleep();
             robot.clear_errors();
         }
 
