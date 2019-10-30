@@ -21,7 +21,8 @@ public:
                 const float min_robot_side,
                 const float object_distance_threshold,
                 const float velocity_threshold,
-                const int odometry_memory);
+                const int odometry_memory,
+                bool calibrate);
     ~RobotFinder();
     
     void calibrate();

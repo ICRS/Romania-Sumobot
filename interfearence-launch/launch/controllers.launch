@@ -46,6 +46,7 @@
         <param name="wheel_radius" value="0.0295"/>
         <param name="wheel_separation" value="0.115"/>
         <param name="publish_tf" value="true"/>
+        <param name="simulation" value="$(arg simulation)"/>
     </node>
 
 </launch>

@@ -6,7 +6,8 @@ RobotFinder::RobotFinder(std::string laser_topic,
                          float min_robot_side,
                          float object_distance_threshold,
                          float velocity_threshold,
-                         int odometry_memory) 
+                         int odometry_memory,
+                         bool calibrate) 
         :arena_diameter_(arena_diameter), max_robot_side_(max_robot_side),
          min_robot_side_(min_robot_side), 
          object_distance_threshold_(object_distance_threshold),
@@ -14,11 +15,21 @@ RobotFinder::RobotFinder(std::string laser_topic,
          odometry_memory_(odometry_memory), laser_topic_(laser_topic)
 {
     calibration_data_size_ = 0;
-    // Start with the calibration callback
-    laser_sub_ = nh_.subscribe(laser_topic,
-                               50,
-                               &RobotFinder::calibration_cb,
-                               this);
+    if(calibrate) {
+        // Start with the calibration callback
+        laser_sub_ = nh_.subscribe(laser_topic,
+                                   50,
+                                   &RobotFinder::calibration_cb,
+                                   this);
+    }
+    else {
+        // Start with the normal callback
+        laser_sub_ = nh_.subscribe(laser_topic,
+                                   50,
+                                   &RobotFinder::laserscan_cb,
+                                   this);
+    }
+
     reset_sub_ = nh_.subscribe("/reset", 2, &RobotFinder::reset_cb, this);
     odom_pub_ = nh_.advertise<nav_msgs::Odometry>("enemy_vo", 50);
     debug_point_cloud_pub_ = nh_.advertise<sensor_msgs::PointCloud>(
