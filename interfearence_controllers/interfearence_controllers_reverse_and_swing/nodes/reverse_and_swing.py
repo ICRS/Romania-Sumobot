@@ -39,21 +39,21 @@ class ReverseAndSwingController(BasicController):
         self.ENEMY_PROXIMITY_THRESHOLD = 0.3
         # Reversing velocity in m/s. Needs to be negative or we'll go
         # forwards...
-        self.REVERSE_VELOCITY = -0.5
+        self.REVERSE_VELOCITY = -0.4
 
         # Speed at which we turn when sweeping. radians/s
         self.SWEEPING_TURNING_SPEED = 3.1415926
         # Velocity at which we move forwards when sweeping. meters/s
-        self.SWEEPING_FORWARDS_SPEED = 0.5
+        self.SWEEPING_FORWARDS_SPEED = 0.4
 
         # Proportional controller for yaw velocity when attacking
         self.ATTACK_YAW_P_CONSTANT = 40
         # Further than this distance from the enemy we move at minimum speed
         self.ATTACK_MIN_SPEED_DISTANCE = 0.7
         # Minimum speed for movement
-        self.ATTACK_MIN_SPEED = 0.4
+        self.ATTACK_MIN_SPEED = 0.2
         # Maximum speed for movement
-        self.ATTACK_MAX_SPEED = 2.5
+        self.ATTACK_MAX_SPEED = 0.6
 
     def reset(self):
         """
