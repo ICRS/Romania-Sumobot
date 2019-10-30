@@ -6,9 +6,9 @@ import math
 from interfearence_controllers_generic_controller.basic_controller import BasicController
 
 # Different states the overall controller can be in
-REVERSING = 0
-SWEEPING = 1
-ATTACKING = 2
+REVERSING = "REVERSING"
+SWEEPING = "SWEEPING"
+ATTACKING = "ATTACKING"
 
 
 class ReverseAndSwingController(BasicController):
@@ -27,9 +27,9 @@ class ReverseAndSwingController(BasicController):
         self.state = REVERSING
         self.first_sweep = True
 
-        # When the yaw of the enemy robot is greater than this we switch to
+        # When the yaw of the enemy robot is less than this we switch to
         # attack mode
-        self.YAW_THRESHOLD = 1.4
+        self.YAW_THRESHOLD = 0.4
         # Project enemy pose 0.2s into the future
         self.PROJECTION_TIME = 0.2
         # When the projected enemy pose is closer than this to us then
@@ -42,7 +42,7 @@ class ReverseAndSwingController(BasicController):
         self.REVERSE_VELOCITY = -0.4
 
         # Speed at which we turn when sweeping. radians/s
-        self.SWEEPING_TURNING_SPEED = 3.1415926
+        self.SWEEPING_TURNING_SPEED = 6.28
         # Velocity at which we move forwards when sweeping. meters/s
         self.SWEEPING_FORWARDS_SPEED = 0.4
 
@@ -51,7 +51,7 @@ class ReverseAndSwingController(BasicController):
         # Further than this distance from the enemy we move at minimum speed
         self.ATTACK_MIN_SPEED_DISTANCE = 0.7
         # Minimum speed for movement
-        self.ATTACK_MIN_SPEED = 0.2
+        self.ATTACK_MIN_SPEED = 0.4
         # Maximum speed for movement
         self.ATTACK_MAX_SPEED = 0.6
 
@@ -107,23 +107,23 @@ class ReverseAndSwingController(BasicController):
                     self.cmd_vel.angular.z = self.SWEEPING_TURNING_SPEED
                     self.first_sweep = False
                 else:
-                    self.cmd_vel.angular.z = -self.TURNING_SPEED
+                    self.cmd_vel.angular.z = -self.SWEEPING_TURNING_SPEED
             else:
                 if self.front_right_edge:
-                    self.cmd_vel.angular.z = self.TURNING_SPEED
+                    self.cmd_vel.angular.z = self.SWEEPING_TURNING_SPEED
                 else:
                     self.cmd_vel.linear.x = self.SWEEPING_FORWARDS_SPEED
         # Otherwise we move left
         else:
             if self.first_sweep:
                 if self.front_left_edge:
-                    self.cmd_vel.angular.z = -self.TURNING_SPEED
+                    self.cmd_vel.angular.z = -self.SWEEPING_TURNING_SPEED
                     self.first_sweep = False
                 else:
-                    self.cmd_vel.angular.z = self.TURNING_SPEED
+                    self.cmd_vel.angular.z = self.SWEEPING_TURNING_SPEED
             else:
                 if self.front_left_edge:
-                    self.cmd_vel.angular.z = -self.TURNING_SPEED
+                    self.cmd_vel.angular.z = -self.SWEEPING_TURNING_SPEED
                 else:
                     self.cmd_vel.linear.x = self.SWEEPING_FORWARDS_SPEED
             
@@ -153,12 +153,12 @@ class ReverseAndSwingController(BasicController):
             return
         # Standard state machine options
         if self.state == REVERSING:
-            if self.rear_left_edge:
+            if self.rear_left_edge == True:
                 self.state = SWEEPING
-                rospy.logerr("State changed to SWEEPING")
-            elif self.rear_right_edge:
+                rospy.logerr("State changed to SWEEPING due to left sensor")
+            elif self.rear_right_edge == True:
                 self.state = SWEEPING
-                rospy.logerr("State changed to SWEEPING")
+                rospy.logerr("State changed to SWEEPING due to right sensor")
         elif self.state == SWEEPING:
             yaw = 2 * math.acos(self.enemy_pose.orientation.w)
             if abs(yaw) < self.YAW_THRESHOLD:
@@ -176,6 +176,11 @@ class ReverseAndSwingController(BasicController):
             rospy.logerr("State changed to ATTACKING due to proximity")
 
     def project_enemy_distance(self, project_time=True):
+        # If the enemy odometry is the default value then return 
+        # some arbitrarily large result
+        if(self.enemy_pose.position.x == 0 and 
+           self.enemy_pose.position.y == 0):
+            return 1.0
         enemy_yaw = 2 * math.acos(self.enemy_pose.orientation.w)
         dx = self.enemy_velocity.linear.x * math.cos(enemy_yaw)
         dy = self.enemy_velocity.linear.x * math.sin(enemy_yaw)
