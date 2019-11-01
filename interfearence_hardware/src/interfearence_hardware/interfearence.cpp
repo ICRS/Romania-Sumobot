@@ -250,9 +250,13 @@ double Interfearence::get_battery_voltage() {
 }
 
 bool Interfearence::check_reset_state() {
-    // TODO: Read pins
+#ifdef __arm__
+    bool start_pin = gpioRead(this->start_pin_);
+    bool kill_pin = gpioRead(this->kill_pin_);
+#else
     bool start_pin = true;
     bool kill_pin = true;
+#endif // __arm__
     
     // It's not in the reset state only if both pins are high
     bool state = !(start_pin && kill_pin);
